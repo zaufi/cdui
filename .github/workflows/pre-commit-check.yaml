@@ -1,0 +1,37 @@
+# SPDX-FileCopyrightText: Alex Turbov <zaufi@pm.me>
+# SPDX-License-Identifier: CC0-1.0
+
+name: Checking pre-commit hooks
+
+on:
+  push:
+    branches:
+      - master
+
+  pull_request:
+    branches:
+      - master
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  # Cancel all except push to the `master` branch to have always full results
+  cancel-in-progress: ${{ !(github.event_name == 'push' && github.ref == 'refs/heads/master') }}
+
+env:
+  CLICOLOR: 1
+  CLICOLOR_FORCE: 1
+  FORCE_COLOR: 1
+  PIP_DISABLE_PIP_VERSION_CHECK: 1
+  PRE_COMMIT_COLOR: always
+
+jobs:
+  pre-commit-checks:
+    name: Pre-commit check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+
+      - name: Checking configured hooks
+        uses: pre-commit/action@v3.0.1
