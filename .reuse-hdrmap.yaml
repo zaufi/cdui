@@ -17,6 +17,14 @@ templates:
       template: hash
 
 licenses:
+  - ref: GPL-3.0-or-later
+    patterns:
+      - 'CMakeLists.txt'
+      - '*.cmake'
+      - '*.cmake.in'
+      - '*.sh'
+      - '*.sh.in'
+
   - ref: CC0-1.0
     patterns:
       - '*'
