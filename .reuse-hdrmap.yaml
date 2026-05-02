@@ -19,7 +19,8 @@ templates:
 licenses:
   - ref: GPL-3.0-or-later
     patterns:
-      - 'CMakeLists.txt'
+      - CMakeLists.txt
+      - '*.bats'
       - '*.cmake'
       - '*.cmake.in'
       - '*.sh'

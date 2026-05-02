@@ -62,9 +62,6 @@ repos:
     rev: v1.46.0
     hooks:
       - id: typos
-        # NOTE Override hook-provided args to prevent automatic
-        # fixing of found typos. Let the dev decide what to fix!
-        args: [--force-exclude]
         stages: *all
 
   - repo: https://github.com/igorshubovych/markdownlint-cli
@@ -81,3 +78,16 @@ repos:
     rev: v6.2.0
     hooks:
       - id: reuse
+
+  - repo: https://github.com/koalaman/shellcheck-precommit
+    rev: v0.11.0
+    hooks:
+      - id: shellcheck
+        args: [--shell=bash, --color=always]
+
+  # NOTE https://github.com/mvdan/sh/blob/v3.12.0/cmd/shfmt/shfmt.1.scd
+  - repo: https://github.com/scop/pre-commit-shfmt
+    rev: v3.12.0-2
+    hooks:
+      - id: shfmt
+        args: [--apply-ignore]

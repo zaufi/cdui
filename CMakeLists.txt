@@ -91,6 +91,24 @@ install(
   )
 
 #---------------------------------------------------------
+# Section: Testing
+#---------------------------------------------------------
+include(CTest)
+
+if(BUILD_TESTING)
+    find_program(
+        BATS_EXECUTABLE bats REQUIRED
+        DOC "Bash Automated Testing System"
+      )
+
+    add_test(
+        NAME cduilib_test
+        COMMAND "${BATS_EXECUTABLE}" "${PROJECT_SOURCE_DIR}/tests/cduilib_tests.bats"
+        WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
+      )
+endif()
+
+#---------------------------------------------------------
 # Section: Configure package options
 #---------------------------------------------------------
 set(CPACK_PACKAGE_RELOCATABLE OFF)
