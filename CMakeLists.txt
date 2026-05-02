@@ -44,6 +44,7 @@ cmake_path(APPEND CMAKE_CURRENT_SOURCE_DIR yaml2json.cmake OUTPUT_VARIABLE CHARM
 cmake_path(APPEND CMAKE_CURRENT_BINARY_DIR charmaps.sh OUTPUT_VARIABLE CHARMAPS_BASH)
 cmake_path(APPEND CMAKE_CURRENT_SOURCE_DIR json2bash-functions.cmake OUTPUT_VARIABLE CHARMAPS_BASH_GENERATOR)
 cmake_path(APPEND CMAKE_CURRENT_SOURCE_DIR charmap.bash.in OUTPUT_VARIABLE CHARMAP_BASH_TEMPLATE)
+cmake_path(APPEND CMAKE_CURRENT_BINARY_DIR cduilib.sh OUTPUT_VARIABLE CDUILIB_BASH)
 
 add_custom_command(
     OUTPUT "${CHARMAPS_JSON}"
@@ -59,8 +60,6 @@ add_custom_command(
     COMMENT "Generating charmaps.json from charmaps.yaml"
     VERBATIM
   )
-
-add_custom_target(charmaps-json ALL DEPENDS "${CHARMAPS_JSON}")
 
 add_custom_command(
     OUTPUT "${CHARMAPS_BASH}"
@@ -78,7 +77,20 @@ add_custom_command(
     VERBATIM
   )
 
-add_custom_target(charmaps-bash-helpers ALL DEPENDS "${CHARMAPS_BASH}")
+add_custom_command(
+    OUTPUT ${CDUILIB_BASH}
+    COMMAND
+        "${CMAKE_COMMAND}"
+        -E cat -- "${PROJECT_SOURCE_DIR}/cduilib.sh" "${CHARMAPS_BASH}"
+        > "${CDUILIB_BASH}"
+    DEPENDS
+        "${CHARMAPS_BASH}"
+        "${PROJECT_SOURCE_DIR}/cduilib.sh"
+    COMMENT "Render cduilib.sh"
+    VERBATIM
+  )
+
+add_custom_target(render-cduilib ALL DEPENDS "${CDUILIB_BASH}")
 
 #---------------------------------------------------------
 # Section: Install project files
@@ -86,7 +98,7 @@ add_custom_target(charmaps-bash-helpers ALL DEPENDS "${CHARMAPS_BASH}")
 
 install(
     FILES
-        "${CHARMAPS_BASH}"
+        "${CDUILIB_BASH}"
     DESTINATION "${CMAKE_INSTALL_LIBEXECDIR}/${PROJECT_NAME}"
   )
 
