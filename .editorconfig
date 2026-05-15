@@ -18,7 +18,6 @@ indent_size = 2
 [*.{bash,sh}{,.in}]
 binary_next_line = true
 function_next_line = true
-indent_size = 4
 keep_padding = true
 space_redirects = true
 switch_case_indent = true
