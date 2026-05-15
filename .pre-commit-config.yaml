@@ -74,6 +74,16 @@ repos:
     hooks:
       - id: yamllint
 
+  - repo: https://github.com/python-jsonschema/check-jsonschema
+    rev: 0.37.2
+    hooks:
+      - id: check-github-workflows
+      - id: check-jsonschema
+        name: Validate config.yaml
+        args: [--schemafile, config-schema.json]
+        types_or: [yaml]
+        files: ^config\.yaml$
+
   - repo: https://github.com/fsfe/reuse-tool
     rev: v6.2.0
     hooks:

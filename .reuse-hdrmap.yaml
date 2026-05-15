@@ -8,6 +8,7 @@ templates:
       style: html
   - patterns:
       - '*.jinja2'
+      - '*.json'
     extra_reuse_cli_options:
       force_dot_license: true
   - patterns:
@@ -25,6 +26,7 @@ licenses:
       - '*.cmake.in'
       - '*.sh'
       - '*.sh.in'
+      - '*-schema.json'
 
   - ref: CC0-1.0
     patterns:
