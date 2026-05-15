@@ -1,0 +1,31 @@
+# SPDX-FileCopyrightText: 2026 Alex Turbov <i.zaufi@gmail.com>
+# SPDX-License-Identifier: CC0-1.0
+
+colors:
+  url: cyan italic
+  current-url: gray dim italic
+  missed-url: red italic strike
+
+plugins:
+  env:
+    enable: true
+    order: 4
+    hotkey: CTRL-E
+
+  git-worktrees:
+    enable: true
+    order: 3
+    hotkey: CTRL-G
+    colors:
+      dirty: yellow
+      green: green
+
+  mc-hotlist:
+    enable: true
+    order: 1
+    hotkey: CTRL-H
+
+  recent:
+    enable: true
+    order: 2
+    hotkey: CTRL-T

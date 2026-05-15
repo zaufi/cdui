@@ -117,3 +117,51 @@ function cdui_color2ansi()
         printf '\033[%sm' "${codes}"
     fi
 }
+
+function cdui_config_dir()
+{
+    echo "${XDG_CONFIG_HOME:-${HOME}/.config}"/cdui
+}
+
+function cdui_config_file()
+{
+    echo "$(cdui_config_dir)"/config.yaml
+}
+
+function cdui_cache_dir()
+{
+    echo "${XDG_CACHE_HOME:-${HOME}/.cache}"/cdui
+}
+
+function cdui_cache_config_file()
+{
+    echo "$(cdui_cache_dir)"/cdui-config.sh
+}
+
+function cdui_load_config()
+{
+    declare -Ag CONFIG=()
+
+    local -r config_file="$(cdui_config_file)"
+    if [[ ! -f ${config_file} ]]; then
+        # No config, nothing to load
+        return
+    fi
+
+    local -r config_cache_file=$(cdui_cache_config_file)
+    if [[ ! -f ${config_cache_file} || ${config_file} -nt ${config_cache_file} ]]; then
+        eval "$(
+            yq -o json '.' "${config_file}" | jq -r '
+                paths(scalars) as $p
+                | "CONFIG[\($p | join(".") | @sh)]=\(
+                    getpath($p) | @sh
+                  )"
+              '
+          )"
+        declare -p CONFIG | sed 's,^declare -A ,,' >"${config_cache_file}"
+        return
+    fi
+
+    # shellcheck source=/dev/null
+    . "${config_cache_file}"
+}
