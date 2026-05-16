@@ -123,8 +123,10 @@ cmake_path(APPEND CMAKE_CURRENT_BINARY_DIR cduilib.sh OUTPUT_VARIABLE CDUILIB_BA
 add_custom_command(
     OUTPUT ${CDUILIB_BASH}
     COMMAND
-        ${CMAKE_COMMAND}
-        -E cat -- ${PROJECT_SOURCE_DIR}/cduilib.sh ${CHARMAPS_BASH} ${CONFIG_DEFAULT_BASH}
+        ${CMAKE_COMMAND} -E cat --
+            ${PROJECT_SOURCE_DIR}/cduilib.sh
+            ${CHARMAPS_BASH}
+            ${CONFIG_DEFAULT_BASH}
         > "${CDUILIB_BASH}"
     DEPENDS
         ${CHARMAPS_BASH}
