@@ -23,6 +23,12 @@ find_program(
   )
 mark_as_advanced(YQ_EXECUTABLE)
 
+find_program(
+    JQ_EXECUTABLE jq REQUIRED
+    DOC "Command-line JSON processor"
+  )
+mark_as_advanced(JQ_EXECUTABLE)
+
 # Try to find mandatory runtime dependencies and warn if smth not found
 foreach(_dep IN ITEMS sk jq grep sed bash cut sort head)
     find_program(${_dep}_EXECUTABLE ${_dep} DOC "Runtime dependency (${_dep})")
@@ -40,26 +46,28 @@ endforeach()
 # Section: "Build" related statements
 #---------------------------------------------------------
 
-cmake_path(APPEND CMAKE_CURRENT_SOURCE_DIR yaml2json.cmake OUTPUT_VARIABLE YAML2JSON_CONVERTER)
+function(add_yaml2json_target input_file output_file)
+    cmake_path(APPEND CMAKE_CURRENT_SOURCE_DIR yaml2json.cmake OUTPUT_VARIABLE YAML2JSON_CONVERTER)
+    add_custom_command(
+        OUTPUT ${output_file}
+        COMMAND
+            ${CMAKE_COMMAND}
+            -DINPUT_FILE=${input_file}
+            -DOUTPUT_FILE=${output_file}
+            -DYQ_EXECUTABLE=${YQ_EXECUTABLE}
+            -P ${YAML2JSON_CONVERTER}
+        DEPENDS
+            ${input_file}
+            ${YAML2JSON_CONVERTER}
+        COMMENT "Generating $<PATH:GET_FILENAME,${output_file}> from $<PATH:GET_FILENAME,${input_file}>"
+        VERBATIM
+      )
+endfunction()
 
 # BEGIN Render charmaps.yaml -> charmaps.json -> charmaps.sh
 cmake_path(APPEND CMAKE_CURRENT_SOURCE_DIR charmaps.yaml OUTPUT_VARIABLE CHARMAPS_YAML)
 cmake_path(APPEND CMAKE_CURRENT_BINARY_DIR charmaps.json OUTPUT_VARIABLE CHARMAPS_JSON)
-
-add_custom_command(
-    OUTPUT ${CHARMAPS_JSON}
-    COMMAND
-        ${CMAKE_COMMAND}
-        -DINPUT_FILE=${CHARMAPS_YAML}
-        -DOUTPUT_FILE=${CHARMAPS_JSON}
-        -DYQ_EXECUTABLE=${YQ_EXECUTABLE}
-        -P ${YAML2JSON_CONVERTER}
-    DEPENDS
-        ${CHARMAPS_YAML}
-        ${YAML2JSON_CONVERTER}
-    COMMENT "Generating charmaps.json from charmaps.yaml"
-    VERBATIM
-  )
+add_yaml2json_target(${CHARMAPS_YAML} ${CHARMAPS_JSON})
 
 cmake_path(APPEND CMAKE_CURRENT_SOURCE_DIR charmap.bash.in OUTPUT_VARIABLE CHARMAP_BASH_TEMPLATE)
 cmake_path(APPEND CMAKE_CURRENT_BINARY_DIR charmaps.sh OUTPUT_VARIABLE CHARMAPS_BASH)
@@ -76,10 +84,39 @@ add_custom_command(
         ${CHARMAPS_JSON}
         ${CHARMAP_BASH_TEMPLATE}
         ${CHARMAPS_GENERATOR}
-    COMMENT "Generating bash helper functions from charmaps.json"
+    COMMENT "Generating bash helper functions from $<PATH:GET_FILENAME,${CHARMAPS_JSON}>"
     VERBATIM
   )
 # END Render charmaps.yaml -> charmaps.json -> charmaps.sh
+
+# BEGIN Render config.schema.yaml -> config.schema.json -> config.defaults.sh
+cmake_path(APPEND CMAKE_CURRENT_SOURCE_DIR config.schema.yaml OUTPUT_VARIABLE CONFIG_SCHEMA_YAML)
+cmake_path(APPEND CMAKE_CURRENT_BINARY_DIR config.schema.json OUTPUT_VARIABLE CONFIG_SCHEMA_JSON)
+add_yaml2json_target(${CONFIG_SCHEMA_YAML} ${CONFIG_SCHEMA_JSON})
+
+cmake_path(APPEND CMAKE_CURRENT_SOURCE_DIR config-default.bash.in OUTPUT_VARIABLE CONFIG_DEFAULT_BASH_TEMPLATE)
+cmake_path(APPEND CMAKE_CURRENT_SOURCE_DIR config-default.jq OUTPUT_VARIABLE CONFIG_DEFAULT_JQ)
+cmake_path(APPEND CMAKE_CURRENT_BINARY_DIR config-default.bash OUTPUT_VARIABLE CONFIG_DEFAULT_BASH)
+cmake_path(APPEND CMAKE_CURRENT_SOURCE_DIR config-default-generator.cmake OUTPUT_VARIABLE CONFIG_DEFAULT_GENERATOR)
+add_custom_command(
+    OUTPUT ${CONFIG_DEFAULT_BASH}
+    COMMAND
+        ${CMAKE_COMMAND}
+        -DINPUT_FILE=${CONFIG_SCHEMA_JSON}
+        -DOUTPUT_FILE=${CONFIG_DEFAULT_BASH}
+        -DTEMPLATE_FILE=${CONFIG_DEFAULT_BASH_TEMPLATE}
+        -DJQ_EXECUTABLE=${JQ_EXECUTABLE}
+        -DCONFIG_DEFAULT_JQ=${CONFIG_DEFAULT_JQ}
+        -P ${CONFIG_DEFAULT_GENERATOR}
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+    DEPENDS
+        ${CONFIG_SCHEMA_JSON}
+        ${CONFIG_DEFAULT_BASH_TEMPLATE}
+        ${CONFIG_DEFAULT_GENERATOR}
+    COMMENT "Generating bash helper functions from $<PATH:GET_FILENAME,${CONFIG_SCHEMA_JSON}>"
+    VERBATIM
+  )
+# END Render config.schema.yaml -> config.schema.json -> config.defaults.sh
 
 # BEGIN Render the final cduilib.sh
 cmake_path(APPEND CMAKE_CURRENT_BINARY_DIR cduilib.sh OUTPUT_VARIABLE CDUILIB_BASH)
@@ -87,10 +124,11 @@ add_custom_command(
     OUTPUT ${CDUILIB_BASH}
     COMMAND
         ${CMAKE_COMMAND}
-        -E cat -- ${PROJECT_SOURCE_DIR}/cduilib.sh ${CHARMAPS_BASH}
+        -E cat -- ${PROJECT_SOURCE_DIR}/cduilib.sh ${CHARMAPS_BASH} ${CONFIG_DEFAULT_BASH}
         > "${CDUILIB_BASH}"
     DEPENDS
         ${CHARMAPS_BASH}
+        ${CONFIG_DEFAULT_BASH}
         ${PROJECT_SOURCE_DIR}/cduilib.sh
     COMMENT "Render cduilib.sh"
     VERBATIM

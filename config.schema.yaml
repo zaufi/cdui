@@ -1,0 +1,49 @@
+# SPDX-FileCopyrightText: 2026 Alex Turbov <i.zaufi@gmail.com>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+$schema: https://json-schema.org/draft/2020-12/schema
+$id: https://github.com/zaufi/cdui/config.schema.yaml
+title: CDUI Configuration
+
+type: object
+additionalProperties: false
+
+properties:
+  colors:
+    type: object
+    additionalProperties: false
+
+    properties:
+      error: &error
+        type: string
+        default: red
+
+      option: &white
+        type: string
+        default: white
+
+      url:
+        type: string
+        default: cyan
+
+      current-url: *white
+
+      missed-url: *error
+
+  plugins:
+    type: object
+    additionalProperties: false
+
+    patternProperties:
+      ^[a-z0-9]+(-[a-z0-9]+)*$:
+        type: object
+        additionalProperties: true
+        properties:
+          enable:
+            type: boolean
+          order:
+            type: integer
+            minimum: 1
+          hotkey:
+            type: string
+            pattern: ^CTRL-[A-Z]$

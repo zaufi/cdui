@@ -80,7 +80,7 @@ repos:
       - id: check-github-workflows
       - id: check-jsonschema
         name: Validate config.yaml
-        args: [--schemafile, config-schema.json]
+        args: [--schemafile, config.schema.yaml]
         types_or: [yaml]
         files: ^config\.yaml$
 

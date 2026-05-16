@@ -73,6 +73,7 @@ if(_charmaps_count GREATER 0)
     endforeach()
 endif()
 
+string(REGEX REPLACE "\n$" "" _generated_functions "${_generated_functions}")
 file(
     APPEND "${OUTPUT_FILE}"
     "${_generated_functions}# END Text to fancy Unicode fonts\n"

@@ -1,0 +1,4 @@
+function @config_path@()
+{
+    printf '%s' '@default_value@'
+}
