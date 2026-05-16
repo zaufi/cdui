@@ -22,6 +22,8 @@ endif()
 file(READ "${INPUT_FILE}" _charmaps_json)
 string(JSON _charmaps_count LENGTH "${_charmaps_json}")
 file(READ "${TEMPLATE_FILE}" _charmap_template)
+# Remove first two lines
+string(REGEX REPLACE "^# [^\n]*\n# [^\n]*\n?" "" _charmap_template "${_charmap_template}")
 
 cmake_path(GET OUTPUT_FILE PARENT_PATH _output_dir)
 file(MAKE_DIRECTORY "${_output_dir}")

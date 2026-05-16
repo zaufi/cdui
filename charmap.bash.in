@@ -1,3 +1,5 @@
+# SPDX-FileCopyrightText: 2026 Alex Turbov <i.zaufi@gmail.com>
+# SPDX-License-Identifier: GPL-3.0-or-later
 function cdui.text.to_@_charmap_name@()
 {
     printf '%s' "$1" | sed 'y/@_input_alphabet@/@_output_alphabet@/'

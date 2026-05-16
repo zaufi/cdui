@@ -37,6 +37,8 @@ endif()
 string(REPLACE "\n" ";" _schema_defaults "${_schema_defaults}")
 
 file(READ "${TEMPLATE_FILE}" _default_fn_template)
+# Remove first two lines
+string(REGEX REPLACE "^# [^\n]*\n# [^\n]*\n?" "" _default_fn_template "${_default_fn_template}")
 
 file(WRITE "${OUTPUT_FILE}" [=[
 
