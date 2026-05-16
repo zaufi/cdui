@@ -138,7 +138,7 @@ function cdui.cache.dir()
 
 function cdui.cache.config_file()
 {
-    echo "$(cdui.cache.dir)"/cdui-config.sh
+    echo "$(cdui.cache.dir)"/cdui-config.bash
 }
 # END Config location helpers
 

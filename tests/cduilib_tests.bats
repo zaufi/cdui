@@ -99,7 +99,7 @@ setup() {
 
 @test 'cdui.cache.config_file returns cache filename' {
     cache_file="$(cdui.cache.config_file)"
-    assert_equal "${cache_file}" "${XDG_CACHE_HOME}"/cdui/cdui-config.sh
+    assert_equal "${cache_file}" "${XDG_CACHE_HOME}"/cdui/cdui-config.bash
 }
 
 @test 'cdui.config.load does nothing when config.yaml is missing' {
