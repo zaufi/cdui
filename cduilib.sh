@@ -162,3 +162,25 @@ function cdui.config.load()
     # shellcheck source=/dev/null
     . "${config_cache_file}"
 }
+
+# BEGIN Error reporting helpers
+function cdui.error()
+{
+    local -r message="${@}"
+    printf '💀 %sError: %s%s\n' \
+        "$(cdui.config.color.error)" \
+        "${message}" \
+        "$(cdui_color2ansi reset)" \
+        >&2
+}
+
+function cdui.die()
+{
+    cdui.error "${@}"
+    if [[ ${_CDUI_DIE_NO_EXIT} -eq 0 ]]; then
+        exit 1
+    else
+        return 1
+    fi
+}
+# END Error reporting helpers
