@@ -170,7 +170,7 @@ function cdui.config.load()
 # BEGIN Error reporting helpers
 function cdui.error()
 {
-    local -r message="${@}"
+    local -r message="${*}"
     printf '💀 %sError: %s%s\n' \
         "$(cdui.config.color.error)" \
         "${message}" \

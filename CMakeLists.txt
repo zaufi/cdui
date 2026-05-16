@@ -143,6 +143,9 @@ add_custom_target(render-cduilib ALL DEPENDS "${CDUILIB_BASH}")
 
 install(
     FILES
+        build-index.jq
+        cdui-feed.sh
+        validate-manifest.jq
         "${CDUILIB_BASH}"
     DESTINATION "${CMAKE_INSTALL_LIBEXECDIR}/${PROJECT_NAME}"
   )
