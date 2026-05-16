@@ -102,65 +102,97 @@ setup() {
     assert_equal "${cache_file}" "${XDG_CACHE_HOME}"/cdui/cdui-config.sh
 }
 
-@test 'cdui.config.load defines empty CONFIG when config.yaml is missing' {
+@test 'cdui.config.load does nothing when config.yaml is missing' {
     # Ensure config does not exist
     rm -f "$(cdui.config.file)"
 
-    unset CONFIG
+    # NOTE This function expected to remains the same
+    function cdui.config.current-url()
+    {
+        echo 'should stay'
+    }
+    run cdui.config.load
+    assert_success
 
-    cdui.config.load
+    assert_file_not_exists "$(cdui.cache.config_file)"
+    run type -t cdui.config.colors.url
+    assert_failure
 
-    # CONFIG must exist
-    declare -p CONFIG >/dev/null
-
-    # Must be associative array
-    assert_equal "$(declare -p CONFIG)" 'declare -A CONFIG=()'
-
-    # Must be empty
-    assert [ "${#CONFIG[@]}" -eq 0 ]
+    assert_equal "$(type -t cdui.config.current-url)" function
+    assert_equal "$(cdui.config.current-url)" 'should stay'
 }
 
-@test 'cdui.config.load loads YAML into CONFIG associative array' {
+@test 'cdui.config.load loads YAML scalar values as shell functions' {
     cp -f --reflink=auto "${BATS_TEST_DIRNAME}"/sample-config.yaml "$(cdui.config.file)"
 
     cdui.config.load
 
     # Checking config data
-    assert_equal "${CONFIG[colors.url]}" 'cyan italic'
-    assert_equal "${CONFIG[plugins.env.enable]}" true
-    assert_equal "${CONFIG[plugins.env.order]}" 4
+    assert_equal "$(type -t cdui.config.colors.url)" function
+    assert_equal "$(cdui.config.colors.url)" 'cyan italic'
+
+    assert_equal "$(type -t cdui.config.plugins.env.enable)" function
+    assert_equal "$(cdui.config.plugins.env.enable)" true
+
+    assert_equal "$(type -t cdui.config.plugins.env.order)" function
+    assert_equal "$(cdui.config.plugins.env.order)" 4
 
     # Checking cache file
     cache_file="$(cdui.cache.config_file)"
     assert_file_exists "${cache_file}"
-    assert_file_contains "${cache_file}" 'CONFIG='
+    assert_file_contains "${cache_file}" 'function cdui.config.colors.url()'
+    assert_file_contains "${cache_file}" 'function cdui.config.plugins.env.enable()'
+    assert_file_contains "${cache_file}" 'function cdui.config.plugins.env.order()'
+    assert_file_not_contains "${cache_file}" 'CONFIG='
+}
+
+@test 'cdui.config.load reuses cache when config is unchanged' {
+    cp -f --reflink=auto "${BATS_TEST_DIRNAME}"/sample-config.yaml "$(cdui.config.file)"
+
+    cdui.config.load
+    cache_file="$(cdui.cache.config_file)"
 
     # Checking reloading the config reuses the cache
     before="$(stat -c %Y "${cache_file}")"
-    unset CONFIG
+    unset -f cdui.config.colors.url cdui.config.plugins.env.enable cdui.config.plugins.env.order
 
-    sleep 1  # NOTE Make sure the updated file get not the same modified time
+    # NOTE Make sure the updated file get not the same modified time
+    sleep 1
     cdui.config.load
 
     assert_file_exists "${cache_file}"
+    assert_equal "$(cdui.config.colors.url)" 'cyan italic'
+    assert_equal "$(cdui.config.plugins.env.enable)" true
+    assert_equal "$(cdui.config.plugins.env.order)" 4
 
     after="$(stat -c %Y "${cache_file}")"
     assert_equal "${before}" "${after}"
+}
+
+@test 'cdui.config.load regenerates cache when config changes' {
+    cp -f --reflink=auto "${BATS_TEST_DIRNAME}"/sample-config.yaml "$(cdui.config.file)"
+
+    cdui.config.load
+    cache_file="$(cdui.cache.config_file)"
+    before="$(stat -c %Y "${cache_file}")"
 
     # Checking that loader regenerates the cache if config has changed
     echo 'foo: bar' >>"$(cdui.config.file)"
-    CONFIG[colors.url]='will be restored after reload'
+    function cdui.config.colors.url()
+    {
+        printf '%s' 'will be restored after reload'
+    }
 
-    sleep 1  # NOTE Make sure the updated file get not the same modified time
+    # NOTE Make sure the updated file get not the same modified time
+    sleep 1
     cdui.config.load
 
     # Recheck data
-    assert_equal "${CONFIG[colors.url]}" 'cyan italic'
-    assert_equal "${CONFIG[foo]}" bar
+    assert_equal "$(cdui.config.colors.url)" 'cyan italic'
+    assert_equal "$(cdui.config.foo)" bar
 
-    after_after="$(stat -c %Y "${cache_file}")"
-    assert_not_equal "${before}" "${after_after}"
-    assert_not_equal "${after}" "${after_after}"
+    after="$(stat -c %Y "${cache_file}")"
+    assert_not_equal "${before}" "${after}"
 }
 
 # kate: hl bash;

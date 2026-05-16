@@ -140,8 +140,6 @@ function cdui.cache.config_file()
 
 function cdui.config.load()
 {
-    declare -Ag CONFIG=()
-
     local -r config_file="$(cdui.config.file)"
     if [[ ! -f ${config_file} ]]; then
         # No config, nothing to load
@@ -150,16 +148,11 @@ function cdui.config.load()
 
     local -r config_cache_file=$(cdui.cache.config_file)
     if [[ ! -f ${config_cache_file} || ${config_file} -nt ${config_cache_file} ]]; then
-        eval "$(
-            yq -o json '.' "${config_file}" | jq -r '
-                paths(scalars) as $p
-                | "CONFIG[\($p | join(".") | @sh)]=\(
-                    getpath($p) | @sh
-                  )"
-              '
-          )"
-        declare -p CONFIG | sed 's,^declare -A ,,' >"${config_cache_file}"
-        return
+        yq eval -r '
+            ..
+          | select(tag != "!!map" and tag != "!!seq")
+          | "function cdui.config." + (path | join(".")) + "()\n{\n    printf '\''%s'\'' '\''" + (. | tostring) + "'\''\n}\n"
+          ' "${config_file}" > "${config_cache_file}"
     fi
 
     # shellcheck source=/dev/null
