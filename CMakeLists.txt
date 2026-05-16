@@ -21,10 +21,12 @@ find_program(
     YQ_EXECUTABLE yq REQUIRED
     DOC "Portable command-line YAML, JSON, XML, CSV, TOML and properties processor"
   )
+mark_as_advanced(YQ_EXECUTABLE)
 
 # Try to find mandatory runtime dependencies and warn if smth not found
 foreach(_dep IN ITEMS sk jq grep sed bash cut sort head)
     find_program(${_dep}_EXECUTABLE ${_dep} DOC "Runtime dependency (${_dep})")
+    mark_as_advanced(${_dep}_EXECUTABLE)
     if(NOT ${_dep}_EXECUTABLE)
         message(
             WARNING
