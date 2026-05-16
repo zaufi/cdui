@@ -105,6 +105,7 @@ install(
 #---------------------------------------------------------
 # Section: Testing
 #---------------------------------------------------------
+set(CTEST_NEW_FORMAT TRUE)
 include(CTest)
 
 if(BUILD_TESTING)
