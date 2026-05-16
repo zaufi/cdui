@@ -1,0 +1,9 @@
+{
+  "id": "mc_hotlist",
+  "options": ["--mc-hotlist", "-m"],
+  "hotkey": "CTRL-H",
+  "description": "Hot dirs 🔥",
+  "icon": "🔥",
+  "order": 1,
+  "entrypoint": "mc-hotlist.sh:cdui.mc_hotlist.get_dirs"
+}

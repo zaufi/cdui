@@ -83,6 +83,11 @@ repos:
         args: [--schemafile, config.schema.yaml]
         types_or: [yaml]
         files: ^config\.yaml$
+      - id: check-jsonschema
+        name: Validate `cdui` plugin manifest
+        args: [--schemafile, cdui.d/manifest.schema.yaml]
+        types_or: [json]
+        files: ^cdui.d/.*/manifest\.json$
 
   - repo: https://github.com/fsfe/reuse-tool
     rev: v6.2.0

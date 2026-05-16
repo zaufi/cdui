@@ -152,6 +152,11 @@ install(
     DESTINATION "${CMAKE_INSTALL_LIBEXECDIR}/${PROJECT_NAME}"
   )
 
+install(
+    DIRECTORY cdui.d
+    DESTINATION "${CMAKE_INSTALL_LIBEXECDIR}/${PROJECT_NAME}"
+  )
+
 #---------------------------------------------------------
 # Section: Testing
 #---------------------------------------------------------

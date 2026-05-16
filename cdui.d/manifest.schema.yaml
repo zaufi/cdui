@@ -1,0 +1,55 @@
+# SPDX-FileCopyrightText: 2026 Alex Turbov <i.zaufi@gmail.com>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+$schema: https://json-schema.org/draft/2020-12/schema
+$id: https://github.com/zaufi/cdui/manifest.schema.yaml
+title: CDUI Plugin Definition
+
+type: object
+additionalProperties: false
+
+properties:
+  id:
+    type: string
+    pattern: ^[a-z]+(_[a-z0-9]+)*$
+
+  options:
+    type: array
+    minItems: 1
+    uniqueItems: true
+    items:
+      type: string
+      pattern: ^-(-[a-z0-9]+(-[a-z0-9]+)*|[a-z0-9])$
+
+  hotkey:
+    type: string
+    # TODO Check the `man sk` for other key names
+    pattern: ^CTRL-[A-Z]$
+
+  description:
+    type: string
+    minLength: 3
+
+  icon:
+    type: string
+    minLength: 1
+    maxLength: 4
+
+  order:
+    type: integer
+    minimum: 1
+
+  entrypoint:
+    type: string
+    pattern: ^[^:]+\.sh:cdui\.[a-zA-Z]+([_\.][a-zA-Z0-9]+)*(:cdui\.[a-zA-Z]+([_\.][a-zA-Z0-9]+)*)?$
+    description: >-
+      Shell script file and function name in the form
+      'file.sh:cdui.function_name(:cdui.function_name)?'
+
+required:
+  - id
+  - options
+  - hotkey
+  - description
+  - order
+  - entrypoint
