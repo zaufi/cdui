@@ -2,6 +2,7 @@
 # SPDX-FileCopyrightText: 2026 Alex Turbov <i.zaufi@gmail.com>
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+# BEGIN Color string parser
 function cdui.color2numbers()
 {
     # style mappings
@@ -117,7 +118,9 @@ function cdui.color2ansi()
         printf '\033[%sm' "${codes}"
     fi
 }
+# END Color string parser
 
+# BEGIN Config location helpers
 function cdui.config.dir()
 {
     echo "${XDG_CONFIG_HOME:-${HOME}/.config}"/cdui
@@ -137,6 +140,7 @@ function cdui.cache.config_file()
 {
     echo "$(cdui.cache.dir)"/cdui-config.sh
 }
+# END Config location helpers
 
 function cdui.config.load()
 {
