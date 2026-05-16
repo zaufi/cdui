@@ -40,15 +40,11 @@ endforeach()
 # Section: "Build" related statements
 #---------------------------------------------------------
 
+cmake_path(APPEND CMAKE_CURRENT_SOURCE_DIR yaml2json.cmake OUTPUT_VARIABLE YAML2JSON_CONVERTER)
+
+# BEGIN Render charmaps.yaml -> charmaps.json -> charmaps.sh
 cmake_path(APPEND CMAKE_CURRENT_SOURCE_DIR charmaps.yaml OUTPUT_VARIABLE CHARMAPS_YAML)
 cmake_path(APPEND CMAKE_CURRENT_BINARY_DIR charmaps.json OUTPUT_VARIABLE CHARMAPS_JSON)
-cmake_path(APPEND CMAKE_CURRENT_SOURCE_DIR charmap.bash.in OUTPUT_VARIABLE CHARMAP_BASH_TEMPLATE)
-cmake_path(APPEND CMAKE_CURRENT_BINARY_DIR charmaps.sh OUTPUT_VARIABLE CHARMAPS_BASH)
-
-cmake_path(APPEND CMAKE_CURRENT_BINARY_DIR cduilib.sh OUTPUT_VARIABLE CDUILIB_BASH)
-
-cmake_path(APPEND CMAKE_CURRENT_SOURCE_DIR yaml2json.cmake OUTPUT_VARIABLE YAML2JSON_CONVERTER)
-cmake_path(APPEND CMAKE_CURRENT_SOURCE_DIR charmaps-generator.cmake OUTPUT_VARIABLE CHARMAPS_GENERATOR)
 
 add_custom_command(
     OUTPUT ${CHARMAPS_JSON}
@@ -65,6 +61,9 @@ add_custom_command(
     VERBATIM
   )
 
+cmake_path(APPEND CMAKE_CURRENT_SOURCE_DIR charmap.bash.in OUTPUT_VARIABLE CHARMAP_BASH_TEMPLATE)
+cmake_path(APPEND CMAKE_CURRENT_BINARY_DIR charmaps.sh OUTPUT_VARIABLE CHARMAPS_BASH)
+cmake_path(APPEND CMAKE_CURRENT_SOURCE_DIR charmaps-generator.cmake OUTPUT_VARIABLE CHARMAPS_GENERATOR)
 add_custom_command(
     OUTPUT ${CHARMAPS_BASH}
     COMMAND
@@ -80,7 +79,10 @@ add_custom_command(
     COMMENT "Generating bash helper functions from charmaps.json"
     VERBATIM
   )
+# END Render charmaps.yaml -> charmaps.json -> charmaps.sh
 
+# BEGIN Render the final cduilib.sh
+cmake_path(APPEND CMAKE_CURRENT_BINARY_DIR cduilib.sh OUTPUT_VARIABLE CDUILIB_BASH)
 add_custom_command(
     OUTPUT ${CDUILIB_BASH}
     COMMAND
@@ -95,6 +97,7 @@ add_custom_command(
   )
 
 add_custom_target(render-cduilib ALL DEPENDS "${CDUILIB_BASH}")
+# END Render the final cduilib.sh
 
 #---------------------------------------------------------
 # Section: Install project files
