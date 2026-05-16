@@ -10,3 +10,4 @@
 # Use `git check-ignore <path>` for debug.
 #
 build/
+tmp/
