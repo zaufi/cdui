@@ -1,4 +1,4 @@
-function cdui_text2@_charmap_name@()
+function cdui.text.to_@_charmap_name@()
 {
     printf '%s' "$1" | sed 'y/@_input_alphabet@/@_output_alphabet@/'
 }

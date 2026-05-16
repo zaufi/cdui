@@ -2,7 +2,7 @@
 # SPDX-FileCopyrightText: 2026 Alex Turbov <i.zaufi@gmail.com>
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-function cdui_color2numbers()
+function cdui.color2numbers()
 {
     # style mappings
     declare -Ar style_map=(
@@ -109,46 +109,46 @@ function cdui_color2numbers()
     printf '%s' "${codes[*]}"
 }
 
-function cdui_color2ansi()
+function cdui.color2ansi()
 {
     local codes
-    codes=$(cdui_color2numbers "$@")
+    codes=$(cdui.color2numbers "$@")
     if [[ -n ${codes} ]]; then
         printf '\033[%sm' "${codes}"
     fi
 }
 
-function cdui_config_dir()
+function cdui.config.dir()
 {
     echo "${XDG_CONFIG_HOME:-${HOME}/.config}"/cdui
 }
 
-function cdui_config_file()
+function cdui.config.file()
 {
-    echo "$(cdui_config_dir)"/config.yaml
+    echo "$(cdui.config.dir)"/config.yaml
 }
 
-function cdui_cache_dir()
+function cdui.cache.dir()
 {
     echo "${XDG_CACHE_HOME:-${HOME}/.cache}"/cdui
 }
 
-function cdui_cache_config_file()
+function cdui.cache.config_file()
 {
-    echo "$(cdui_cache_dir)"/cdui-config.sh
+    echo "$(cdui.cache.dir)"/cdui-config.sh
 }
 
-function cdui_load_config()
+function cdui.config.load()
 {
     declare -Ag CONFIG=()
 
-    local -r config_file="$(cdui_config_file)"
+    local -r config_file="$(cdui.config.file)"
     if [[ ! -f ${config_file} ]]; then
         # No config, nothing to load
         return
     fi
 
-    local -r config_cache_file=$(cdui_cache_config_file)
+    local -r config_cache_file=$(cdui.cache.config_file)
     if [[ ! -f ${config_cache_file} || ${config_file} -nt ${config_cache_file} ]]; then
         eval "$(
             yq -o json '.' "${config_file}" | jq -r '

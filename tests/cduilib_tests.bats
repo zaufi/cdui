@@ -15,92 +15,100 @@ setup() {
     export XDG_CACHE_HOME="${HOME}"/xdg-cache
     mkdir -p "${XDG_CACHE_HOME}"/cdui
 
-    # shellcheck source=/dev/null
-    . "${BATS_TEST_DIRNAME}"/../build/cduilib.sh
+    # NOTE CTest will run this from the CMake's build directory
+    # with rendered `cduilib.sh`
+    if [[ -f cduilib.sh ]]; then
+        # shellcheck source=/dev/null
+        . cduilib.sh
+    else
+        # Otherwise, use the partial file from the source directory
+        # shellcheck source=/dev/null
+        . "${BATS_TEST_DIRNAME}"/../build/cduilib.sh
+    fi
 }
 
 @test 'parse color string' {
-    empty=$(cdui_color2numbers 'invalid #color rgb(string)')
+    empty=$(cdui.color2numbers 'invalid #color rgb(string)')
     assert_equal "${empty}" ''
 
-    red=$(cdui_color2numbers 'red')
+    red=$(cdui.color2numbers 'red')
     assert_equal "${red}" '31'
 
-    fg_red=$(cdui_color2numbers ' fg:red')
+    fg_red=$(cdui.color2numbers ' fg:red')
     assert_equal "${fg_red}" '31'
 
-    bg_red=$(cdui_color2numbers 'bg:red')
+    bg_red=$(cdui.color2numbers 'bg:red')
     assert_equal "${bg_red}" '41'
 
-    bright_red=$(cdui_color2numbers 'bright_red')
+    bright_red=$(cdui.color2numbers 'bright_red')
     assert_equal "${bright_red}" '91'
 
-    fg_bright_red=$(cdui_color2numbers 'fg:bright_red')
+    fg_bright_red=$(cdui.color2numbers 'fg:bright_red')
     assert_equal "${fg_bright_red}" '91'
 
-    bg_bright_red=$(cdui_color2numbers 'bg:bright_red')
+    bg_bright_red=$(cdui.color2numbers 'bg:bright_red')
     assert_equal "${bg_bright_red}" '101'
 
-    bold_red=$(cdui_color2numbers 'bold red')
+    bold_red=$(cdui.color2numbers 'bold red')
     assert_equal "${bold_red}" '1;31'
 
-    red_bold=$(cdui_color2numbers 'red bold ')
+    red_bold=$(cdui.color2numbers 'red bold ')
     assert_equal "${red_bold}" '31;1'
 
-    rgb_red=$(cdui_color2numbers ' #ff0000 ')
+    rgb_red=$(cdui.color2numbers ' #ff0000 ')
     assert_equal "${rgb_red}" '38;2;255;0;0'
 
-    bg_rgb_red=$(cdui_color2numbers 'bg:#ff0000')
+    bg_rgb_red=$(cdui.color2numbers 'bg:#ff0000')
     assert_equal "${bg_rgb_red}" '48;2;255;0;0'
 
-    bold_rgb_red=$(cdui_color2numbers 'bold #ff0000')
+    bold_rgb_red=$(cdui.color2numbers 'bold #ff0000')
     assert_equal "${bold_rgb_red}" '1;38;2;255;0;0'
 
-    rgb_red_italic=$(cdui_color2numbers 'rgb(255,0,0)' italic)
+    rgb_red_italic=$(cdui.color2numbers 'rgb(255,0,0)' italic)
     assert_equal "${rgb_red_italic}" '38;2;255;0;0;3'
 
-    bg_rgb_red=$(cdui_color2numbers 'bg:rgb(255,0,0)')
+    bg_rgb_red=$(cdui.color2numbers 'bg:rgb(255,0,0)')
     assert_equal "${bg_rgb_red}" '48;2;255;0;0'
 }
 
 @test 'print color string' {
-    empty=$(cdui_color2ansi 'invalid #color rgb(string)')
+    empty=$(cdui.color2ansi 'invalid #color rgb(string)')
     assert_equal "${empty}" ''
 
-    red=$(cdui_color2ansi 'red')
+    red=$(cdui.color2ansi 'red')
     assert_equal "${red}" $'\033[31m'
 
-    intro=$(printf '%s%s%s' "$(cdui_color2ansi red)" "Hello Africa!" "$(cdui_color2ansi reset)")
+    intro=$(printf '%s%s%s' "$(cdui.color2ansi red)" "Hello Africa!" "$(cdui.color2ansi reset)")
     assert_equal "${intro}" $'\033[31mHello Africa!\033[0m'
 }
 
-@test 'cdui_config_dir uses XDG_CONFIG_HOME' {
-    config_dir="$(cdui_config_dir)"
+@test 'cdui.config.dir uses XDG_CONFIG_HOME' {
+    config_dir="$(cdui.config.dir)"
     assert_equal "${config_dir}" "${XDG_CONFIG_HOME}"/cdui
 }
 
-@test 'cdui_config_file returns config filename' {
-    config_file="$(cdui_config_file)"
+@test 'cdui.config.file returns config filename' {
+    config_file="$(cdui.config.file)"
     assert_equal "${config_file}" "${XDG_CONFIG_HOME}"/cdui/config.yaml
 }
 
-@test 'cdui_cache_dir uses XDG_CACHE_HOME' {
-    cache_dir="$(cdui_cache_dir)"
+@test 'cdui.cache.dir uses XDG_CACHE_HOME' {
+    cache_dir="$(cdui.cache.dir)"
     assert_equal "${cache_dir}" "${XDG_CACHE_HOME}"/cdui
 }
 
-@test 'cdui_cache_config_file returns cache filename' {
-    cache_file="$(cdui_cache_config_file)"
+@test 'cdui.cache.config_file returns cache filename' {
+    cache_file="$(cdui.cache.config_file)"
     assert_equal "${cache_file}" "${XDG_CACHE_HOME}"/cdui/cdui-config.sh
 }
 
-@test 'cdui_load_config defines empty CONFIG when config.yaml is missing' {
+@test 'cdui.config.load defines empty CONFIG when config.yaml is missing' {
     # Ensure config does not exist
-    rm -f "$(cdui_config_file)"
+    rm -f "$(cdui.config.file)"
 
     unset CONFIG
 
-    cdui_load_config
+    cdui.config.load
 
     # CONFIG must exist
     declare -p CONFIG >/dev/null
@@ -112,10 +120,10 @@ setup() {
     assert [ "${#CONFIG[@]}" -eq 0 ]
 }
 
-@test 'cdui_load_config loads YAML into CONFIG associative array' {
-    cp -f --reflink=auto "${BATS_TEST_DIRNAME}"/sample-config.yaml "$(cdui_config_file)"
+@test 'cdui.config.load loads YAML into CONFIG associative array' {
+    cp -f --reflink=auto "${BATS_TEST_DIRNAME}"/sample-config.yaml "$(cdui.config.file)"
 
-    cdui_load_config
+    cdui.config.load
 
     # Checking config data
     assert_equal "${CONFIG[colors.url]}" 'cyan italic'
@@ -123,7 +131,7 @@ setup() {
     assert_equal "${CONFIG[plugins.env.order]}" 4
 
     # Checking cache file
-    cache_file="$(cdui_cache_config_file)"
+    cache_file="$(cdui.cache.config_file)"
     assert_file_exists "${cache_file}"
     assert_file_contains "${cache_file}" 'CONFIG='
 
@@ -132,7 +140,7 @@ setup() {
     unset CONFIG
 
     sleep 1  # NOTE Make sure the updated file get not the same modified time
-    cdui_load_config
+    cdui.config.load
 
     assert_file_exists "${cache_file}"
 
@@ -140,11 +148,11 @@ setup() {
     assert_equal "${before}" "${after}"
 
     # Checking that loader regenerates the cache if config has changed
-    echo 'foo: bar' >>"$(cdui_config_file)"
+    echo 'foo: bar' >>"$(cdui.config.file)"
     CONFIG[colors.url]='will be restored after reload'
 
     sleep 1  # NOTE Make sure the updated file get not the same modified time
-    cdui_load_config
+    cdui.config.load
 
     # Recheck data
     assert_equal "${CONFIG[colors.url]}" 'cyan italic'
