@@ -40,39 +40,41 @@ endforeach()
 
 cmake_path(APPEND CMAKE_CURRENT_SOURCE_DIR charmaps.yaml OUTPUT_VARIABLE CHARMAPS_YAML)
 cmake_path(APPEND CMAKE_CURRENT_BINARY_DIR charmaps.json OUTPUT_VARIABLE CHARMAPS_JSON)
-cmake_path(APPEND CMAKE_CURRENT_SOURCE_DIR yaml2json.cmake OUTPUT_VARIABLE YAML2JSON_CONVERTER)
-cmake_path(APPEND CMAKE_CURRENT_BINARY_DIR charmaps.sh OUTPUT_VARIABLE CHARMAPS_BASH)
 cmake_path(APPEND CMAKE_CURRENT_SOURCE_DIR charmap.bash.in OUTPUT_VARIABLE CHARMAP_BASH_TEMPLATE)
+cmake_path(APPEND CMAKE_CURRENT_BINARY_DIR charmaps.sh OUTPUT_VARIABLE CHARMAPS_BASH)
+
 cmake_path(APPEND CMAKE_CURRENT_BINARY_DIR cduilib.sh OUTPUT_VARIABLE CDUILIB_BASH)
+
+cmake_path(APPEND CMAKE_CURRENT_SOURCE_DIR yaml2json.cmake OUTPUT_VARIABLE YAML2JSON_CONVERTER)
 cmake_path(APPEND CMAKE_CURRENT_SOURCE_DIR charmaps-generator.cmake OUTPUT_VARIABLE CHARMAPS_GENERATOR)
 
 add_custom_command(
-    OUTPUT "${CHARMAPS_JSON}"
+    OUTPUT ${CHARMAPS_JSON}
     COMMAND
-        "${CMAKE_COMMAND}"
-        -DINPUT_FILE="${CHARMAPS_YAML}"
-        -DOUTPUT_FILE="${CHARMAPS_JSON}"
-        -DYQ_EXECUTABLE="${YQ_EXECUTABLE}"
-        -P "${YAML2JSON_CONVERTER}"
+        ${CMAKE_COMMAND}
+        -DINPUT_FILE=${CHARMAPS_YAML}
+        -DOUTPUT_FILE=${CHARMAPS_JSON}
+        -DYQ_EXECUTABLE=${YQ_EXECUTABLE}
+        -P ${YAML2JSON_CONVERTER}
     DEPENDS
-        "${CHARMAPS_YAML}"
-        "${YAML2JSON_CONVERTER}"
+        ${CHARMAPS_YAML}
+        ${YAML2JSON_CONVERTER}
     COMMENT "Generating charmaps.json from charmaps.yaml"
     VERBATIM
   )
 
 add_custom_command(
-    OUTPUT "${CHARMAPS_BASH}"
+    OUTPUT ${CHARMAPS_BASH}
     COMMAND
-        "${CMAKE_COMMAND}"
-        -DINPUT_FILE="${CHARMAPS_JSON}"
-        -DOUTPUT_FILE="${CHARMAPS_BASH}"
-        -DTEMPLATE_FILE="${CHARMAP_BASH_TEMPLATE}"
-        -P "${CHARMAPS_GENERATOR}"
+        ${CMAKE_COMMAND}
+        -DINPUT_FILE=${CHARMAPS_JSON}
+        -DOUTPUT_FILE=${CHARMAPS_BASH}
+        -DTEMPLATE_FILE=${CHARMAP_BASH_TEMPLATE}
+        -P ${CHARMAPS_GENERATOR}
     DEPENDS
-        "${CHARMAPS_JSON}"
-        "${CHARMAP_BASH_TEMPLATE}"
-        "${CHARMAPS_GENERATOR}"
+        ${CHARMAPS_JSON}
+        ${CHARMAP_BASH_TEMPLATE}
+        ${CHARMAPS_GENERATOR}
     COMMENT "Generating bash helper functions from charmaps.json"
     VERBATIM
   )
@@ -80,12 +82,12 @@ add_custom_command(
 add_custom_command(
     OUTPUT ${CDUILIB_BASH}
     COMMAND
-        "${CMAKE_COMMAND}"
-        -E cat -- "${PROJECT_SOURCE_DIR}/cduilib.sh" "${CHARMAPS_BASH}"
+        ${CMAKE_COMMAND}
+        -E cat -- ${PROJECT_SOURCE_DIR}/cduilib.sh ${CHARMAPS_BASH}
         > "${CDUILIB_BASH}"
     DEPENDS
-        "${CHARMAPS_BASH}"
-        "${PROJECT_SOURCE_DIR}/cduilib.sh"
+        ${CHARMAPS_BASH}
+        ${PROJECT_SOURCE_DIR}/cduilib.sh
     COMMENT "Render cduilib.sh"
     VERBATIM
   )

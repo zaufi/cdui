@@ -13,10 +13,6 @@ if(NOT DEFINED YQ_EXECUTABLE)
     message(FATAL_ERROR "YQ_EXECUTABLE is not set")
 endif()
 
-foreach(_var INPUT_FILE OUTPUT_FILE YQ_EXECUTABLE)
-    string(REGEX REPLACE "^\"(.*)\"$" "\\1" ${_var} "${${_var}}")
-endforeach()
-
 execute_process(
     COMMAND "${YQ_EXECUTABLE}" --output-format=json "." "${INPUT_FILE}"
     OUTPUT_FILE "${OUTPUT_FILE}"
