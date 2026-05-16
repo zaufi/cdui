@@ -155,7 +155,11 @@ function cdui.config.load()
         yq eval -r '
             ..
           | select(tag != "!!map" and tag != "!!seq")
-          | "function cdui.config." + (path | join(".")) + "()\n{\n    printf '\''%s'\'' '\''" + (. | tostring) + "'\''\n}\n"
+          | "function cdui.config."
+              + (path | map(tostring | sub("-"; "_")) | join("."))
+              + "()\n{\n    printf '\''%s'\'' '\''"
+              + (. | tostring)
+              + "'\''\n}\n"
           ' "${config_file}" > "${config_cache_file}"
     fi
 

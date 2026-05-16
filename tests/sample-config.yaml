@@ -3,8 +3,11 @@
 
 colors:
   url: cyan italic
+  current-url: gray dim italic
 
 plugins:
   env:
     enable: true
     order: 4
+  git-worktrees:
+    enable: false
