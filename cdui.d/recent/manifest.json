@@ -1,0 +1,9 @@
+{
+  "id": "recent",
+  "options": ["--recent", "-r"],
+  "hotkey": "CTRL-R",
+  "description": "Recent dirs 🔁",
+  "icon": "🔁",
+  "order": 2,
+  "entrypoint": "recent.sh:cdui.recent.get_dirs:cdui.recent.post_select_dir"
+}
