@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 #---------------------------------------------------------
-# Section: Initialize CMake
+# Section: Initialize CMake and find requirements
 #---------------------------------------------------------
 cmake_minimum_required(VERSION 3.31)
 
@@ -140,16 +140,21 @@ add_custom_command(
 add_custom_target(render-cduilib ALL DEPENDS "${CDUILIB_BASH}")
 # END Render the final cduilib.sh
 
+# To run scripts from the build tree, some files must be there
+foreach(file IN ITEMS build-index.jq cdui-feed.sh validate-manifest.jq)
+    configure_file(${file} ${file} COPYONLY)
+endforeach()
+
 #---------------------------------------------------------
 # Section: Install project files
 #---------------------------------------------------------
 
 install(
     FILES
-        build-index.jq
-        cdui-feed.sh
-        validate-manifest.jq
-        "${CDUILIB_BASH}"
+        ${CDUILIB_BASH}
+        ${PROJECT_BINARY_DIR}/build-index.jq
+        ${PROJECT_BINARY_DIR}/cdui-feed.sh
+        ${PROJECT_BINARY_DIR}/validate-manifest.jq
     DESTINATION "${CMAKE_INSTALL_LIBEXECDIR}/${PROJECT_NAME}"
   )
 
@@ -246,6 +251,6 @@ set(CPACK_DEBIAN_PACKAGE_SUGGESTS "")
 set(
     CPACK_DEBIAN_PACKAGE_DESCRIPTION
     "${CPACK_PACKAGE_DESCRIPTION_SUMMARY}\n${CPACK_RPM_PACKAGE_DESCRIPTION}"
-)
+  )
 
 include(CPack)

@@ -8,10 +8,7 @@ set -eo pipefail
 declare -r SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 declare -r PLUGIN_DIR="${SCRIPT_DIR}"/cdui.d
 
-if [[ -f ${SCRIPT_DIR}/build/cduilib.sh ]]; then
-    # shellcheck source=./cduilib.sh
-    . "${SCRIPT_DIR}"/build/cduilib.sh
-elif [[ -f ${SCRIPT_DIR}/cduilib.sh ]]; then
+if [[ -f ${SCRIPT_DIR}/cduilib.sh ]]; then
     # shellcheck source=./cduilib.sh
     . "${SCRIPT_DIR}"/cduilib.sh
 else

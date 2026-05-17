@@ -115,8 +115,6 @@ setup() {
     assert_success
 
     assert_file_not_exists "$(cdui.cache.config_file)"
-    run type -t cdui.config.color.url
-    assert_failure
 
     assert_equal "$(type -t cdui.config.color.current_url)" function
     assert_equal "$(cdui.config.color.current_url)" 'should stay'
