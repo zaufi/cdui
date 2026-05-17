@@ -112,7 +112,7 @@ function cdui.color2numbers()
 
 function cdui.color2ansi()
 {
-    [[ -z NO_COLOR ]] || return
+    [[ -z NO_COLOR && ${TERM} != 'dumb' ]] || return
 
     local codes
     codes=$(cdui.color2numbers "$@")
