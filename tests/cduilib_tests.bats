@@ -14,6 +14,8 @@ setup() {
 
     export XDG_CACHE_HOME="${HOME}"/xdg-cache
     mkdir -p "${XDG_CACHE_HOME}"/cdui
+    export TERM=xterm-256color
+    unset NO_COLOR
 
     # NOTE CTest will run this from the CMake's build directory
     # with rendered `cduilib.sh`
@@ -127,10 +129,10 @@ setup() {
 
     # Checking config data
     assert_equal "$(type -t cdui.config.color.url)" function
-    assert_equal "$(cdui.config.color.url)" 'cyan italic'
+    assert_equal "$(cdui.config.color.url)" $'\033[36;3m'
 
     assert_equal "$(type -t cdui.config.color.current_url)" function
-    assert_equal "$(cdui.config.color.current_url)" 'gray dim italic'
+    assert_equal "$(cdui.config.color.current_url)" $'\033[2;3m'
 
     assert_equal "$(type -t cdui.config.plugins.env.enable)" function
     assert_equal "$(cdui.config.plugins.env.enable)" true
@@ -146,6 +148,7 @@ setup() {
     assert_file_exists "${cache_file}"
     assert_file_contains "${cache_file}" 'function cdui.config.color.url()'
     assert_file_contains "${cache_file}" 'function cdui.config.color.current_url()'
+    assert_file_contains "${cache_file}" 'cdui.color2ansi '\''cyan italic'\'''
     assert_file_contains "${cache_file}" 'function cdui.config.plugins.env.enable()'
     assert_file_contains "${cache_file}" 'function cdui.config.plugins.env.order()'
     assert_file_contains "${cache_file}" 'function cdui.config.plugins.git_worktrees.enable()'
@@ -173,8 +176,8 @@ setup() {
     cdui.config.load
 
     assert_file_exists "${cache_file}"
-    assert_equal "$(cdui.config.color.url)" 'cyan italic'
-    assert_equal "$(cdui.config.color.current_url)" 'gray dim italic'
+    assert_equal "$(cdui.config.color.url)" $'\033[36;3m'
+    assert_equal "$(cdui.config.color.current_url)" $'\033[2;3m'
     assert_equal "$(cdui.config.plugins.env.enable)" true
     assert_equal "$(cdui.config.plugins.env.order)" 4
     assert_equal "$(cdui.config.plugins.git_worktrees.enable)" false
@@ -202,7 +205,7 @@ setup() {
     cdui.config.load
 
     # Recheck data
-    assert_equal "$(cdui.config.color.url)" 'cyan italic'
+    assert_equal "$(cdui.config.color.url)" $'\033[36;3m'
     assert_equal "$(cdui.config.foo)" bar
 
     after="$(stat -c %Y "${cache_file}")"

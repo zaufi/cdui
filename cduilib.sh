@@ -112,13 +112,14 @@ function cdui.color2numbers()
 
 function cdui.color2ansi()
 {
-    [[ -z NO_COLOR && ${TERM} != 'dumb' ]] || return
+    [[ -z ${NO_COLOR:-} && ${TERM:-} != 'dumb' ]] || return 0
 
     local codes
     codes=$(cdui.color2numbers "$@")
     if [[ -n ${codes} ]]; then
         printf '\033[%sm' "${codes}"
     fi
+    return 0
 }
 # END Color string parser
 
@@ -154,15 +155,19 @@ function cdui.config.load()
 
     local -r config_cache_file=$(cdui.cache.config_file)
     if [[ ! -f ${config_cache_file} || ${config_file} -nt ${config_cache_file} ]]; then
-        yq eval -r '
-            ..
-          | select(tag != "!!map" and tag != "!!seq")
-          | "function cdui.config."
-              + (path | map(tostring | sub("-"; "_")) | join("."))
-              + "()\n{\n    printf '\''%s'\'' '\''"
-              + (. | tostring)
-              + "'\''\n}\n"
-          ' "${config_file}" > "${config_cache_file}"
+        yq eval -o=json '.' "${config_file}" \
+          | jq -r '
+                paths(type != "object" and type != "array") as $path
+              | ($path | map(tostring | gsub("-"; "_")) | join(".")) as $key
+              | (getpath($path) | tostring) as $value
+              | "function cdui.config.\($key)()\n{\n    "
+                  + if ".\($key)." | contains(".color.") then
+                      "cdui.color2ansi \($value | @sh)"
+                    else
+                      "printf '\''%s'\'' \($value | @sh)"
+                    end
+                  + "\n}\n"
+            ' > "${config_cache_file}"
     fi
 
     # shellcheck source=/dev/null
@@ -174,7 +179,7 @@ function cdui.error()
 {
     local -r message="${*}"
     printf '💀 %sError: %s%s\n' \
-        "$(cdui.color2ansi "$(cdui.config.color.error)")" \
+        "$(cdui.config.color.error)" \
         "${message}" \
         "$(cdui.color2ansi reset)" \
         >&2

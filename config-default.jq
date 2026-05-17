@@ -8,7 +8,15 @@ def walk($p):
   | ($p + [$key]) as $path
   | .value as $v
   | if $v.default != null then
-      "\($path | join("."))=\($v.default)"
+      ($path | join(".")) as $config_path
+      | ($v.default | tostring) as $default_value
+      | "function cdui.config.\($config_path)()\n{\n    "
+          + if ".\($config_path)." | contains(".color.") then
+              "cdui.color2ansi \($default_value | @sh)"
+            else
+              "printf '%s' \($default_value | @sh)"
+            end
+          + "\n}\n"
     else
       empty
     end,
