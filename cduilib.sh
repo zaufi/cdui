@@ -112,6 +112,8 @@ function cdui.color2numbers()
 
 function cdui.color2ansi()
 {
+    [[ -z NO_COLOR ]] || return
+
     local codes
     codes=$(cdui.color2numbers "$@")
     if [[ -n ${codes} ]]; then
