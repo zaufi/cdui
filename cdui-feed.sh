@@ -5,14 +5,14 @@
 set -eo pipefail
 
 # shellcheck disable=SC2155
-declare -r SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
-declare -r PLUGIN_DIR="${SCRIPT_DIR}"/cdui.d
+declare -r CDUI_SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+declare -r CDUI_PLUGIN_DIR="${CDUI_SCRIPT_DIR}"/cdui.d
 
-if [[ -f ${SCRIPT_DIR}/cduilib.sh ]]; then
+if [[ -f ${CDUI_SCRIPT_DIR}/cduilib.sh ]]; then
     # shellcheck source=./cduilib.sh
-    . "${SCRIPT_DIR}"/cduilib.sh
+    . "${CDUI_SCRIPT_DIR}"/cduilib.sh
 else
-    echo "Missed file: ${SCRIPT_DIR}/cduilib.sh" >&2
+    echo "Missed file: ${CDUI_SCRIPT_DIR}/cduilib.sh" >&2
     exit 1
 fi
 
@@ -20,12 +20,12 @@ fi
 function validate_manifest()
 {
     local -r file="${1}"
-    jq -ef "${SCRIPT_DIR}"/validate-manifest.jq "${file}" >/dev/null
+    jq -ef "${CDUI_SCRIPT_DIR}"/validate-manifest.jq "${file}" >/dev/null
 }
 
 function load_manifests()
 {
-    local -a files=("${PLUGIN_DIR}"/*/manifest.json)
+    local -a files=("${CDUI_PLUGIN_DIR}"/*/manifest.json)
     [[ -e "${files[0]}" ]] || {
         echo '[]'
         return
@@ -48,13 +48,13 @@ function build_index()
 {
     local -r json="${1}"
 
-    jq -rf "${SCRIPT_DIR}"/build-index.jq <<<"${json}"
+    jq -rf "${CDUI_SCRIPT_DIR}"/build-index.jq <<<"${json}"
 }
 
 function resolve_script_path()
 {
     local -r script="${1}"
-    local -r path="${PLUGIN_DIR}/${script%.sh}/${script}"
+    local -r path="${CDUI_PLUGIN_DIR}/${script%.sh}/${script}"
 
     [[ -f "${path}" ]] || {
         cdui.die "Script not found: ${path}"
