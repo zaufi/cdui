@@ -113,6 +113,7 @@ add_custom_command(
         ${CONFIG_SCHEMA_JSON}
         ${CONFIG_DEFAULT_BASH_TEMPLATE}
         ${CONFIG_DEFAULT_GENERATOR}
+        ${CMAKE_SOURCE_DIR}/config-default.jq
     COMMENT "Generating bash helper functions from $<PATH:GET_FILENAME,${CONFIG_SCHEMA_JSON}>"
     VERBATIM
   )
