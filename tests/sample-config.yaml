@@ -1,7 +1,7 @@
 # SPDX-FileCopyrightText: 2026 Alex Turbov <i.zaufi@gmail.com>
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-colors:
+color:
   url: cyan italic
   current-url: gray dim italic
 

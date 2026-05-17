@@ -172,9 +172,9 @@ function cdui.error()
 {
     local -r message="${*}"
     printf '💀 %sError: %s%s\n' \
-        "$(cdui.config.color.error)" \
+        "$(cdui.color2ansi "$(cdui.config.color.error)")" \
         "${message}" \
-        "$(cdui_color2ansi reset)" \
+        "$(cdui.color2ansi reset)" \
         >&2
 }
 

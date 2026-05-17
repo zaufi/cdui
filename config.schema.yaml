@@ -9,7 +9,7 @@ type: object
 additionalProperties: false
 
 properties:
-  colors:
+  color:
     type: object
     additionalProperties: false
 

@@ -115,7 +115,7 @@ setup() {
     assert_success
 
     assert_file_not_exists "$(cdui.cache.config_file)"
-    run type -t cdui.config.colors.url
+    run type -t cdui.config.color.url
     assert_failure
 
     assert_equal "$(type -t cdui.config.color.current_url)" function
@@ -128,11 +128,11 @@ setup() {
     cdui.config.load
 
     # Checking config data
-    assert_equal "$(type -t cdui.config.colors.url)" function
-    assert_equal "$(cdui.config.colors.url)" 'cyan italic'
+    assert_equal "$(type -t cdui.config.color.url)" function
+    assert_equal "$(cdui.config.color.url)" 'cyan italic'
 
-    assert_equal "$(type -t cdui.config.colors.current_url)" function
-    assert_equal "$(cdui.config.colors.current_url)" 'gray dim italic'
+    assert_equal "$(type -t cdui.config.color.current_url)" function
+    assert_equal "$(cdui.config.color.current_url)" 'gray dim italic'
 
     assert_equal "$(type -t cdui.config.plugins.env.enable)" function
     assert_equal "$(cdui.config.plugins.env.enable)" true
@@ -146,12 +146,12 @@ setup() {
     # Checking cache file
     cache_file="$(cdui.cache.config_file)"
     assert_file_exists "${cache_file}"
-    assert_file_contains "${cache_file}" 'function cdui.config.colors.url()'
-    assert_file_contains "${cache_file}" 'function cdui.config.colors.current_url()'
+    assert_file_contains "${cache_file}" 'function cdui.config.color.url()'
+    assert_file_contains "${cache_file}" 'function cdui.config.color.current_url()'
     assert_file_contains "${cache_file}" 'function cdui.config.plugins.env.enable()'
     assert_file_contains "${cache_file}" 'function cdui.config.plugins.env.order()'
     assert_file_contains "${cache_file}" 'function cdui.config.plugins.git_worktrees.enable()'
-    assert_file_not_contains "${cache_file}" 'function cdui.config.colors.current-url()'
+    assert_file_not_contains "${cache_file}" 'function cdui.config.color.current-url()'
     assert_file_not_contains "${cache_file}" 'function cdui.config.plugins.git-worktrees.enable()'
     assert_file_not_contains "${cache_file}" 'CONFIG='
 }
@@ -164,8 +164,8 @@ setup() {
 
     # Checking reloading the config reuses the cache
     before="$(stat -c %Y "${cache_file}")"
-    unset -f cdui.config.colors.url
-    unset -f cdui.config.colors.current_url
+    unset -f cdui.config.color.url
+    unset -f cdui.config.color.current_url
     unset -f cdui.config.plugins.env.enable
     unset -f cdui.config.plugins.env.order
     unset -f cdui.config.plugins.git_worktrees.enable
@@ -175,8 +175,8 @@ setup() {
     cdui.config.load
 
     assert_file_exists "${cache_file}"
-    assert_equal "$(cdui.config.colors.url)" 'cyan italic'
-    assert_equal "$(cdui.config.colors.current_url)" 'gray dim italic'
+    assert_equal "$(cdui.config.color.url)" 'cyan italic'
+    assert_equal "$(cdui.config.color.current_url)" 'gray dim italic'
     assert_equal "$(cdui.config.plugins.env.enable)" true
     assert_equal "$(cdui.config.plugins.env.order)" 4
     assert_equal "$(cdui.config.plugins.git_worktrees.enable)" false
@@ -194,7 +194,7 @@ setup() {
 
     # Checking that loader regenerates the cache if config has changed
     echo 'foo: bar' >>"$(cdui.config.file)"
-    function cdui.config.colors.url()
+    function cdui.config.color.url()
     {
         printf '%s' 'will be restored after reload'
     }
@@ -204,7 +204,7 @@ setup() {
     cdui.config.load
 
     # Recheck data
-    assert_equal "$(cdui.config.colors.url)" 'cyan italic'
+    assert_equal "$(cdui.config.color.url)" 'cyan italic'
     assert_equal "$(cdui.config.foo)" bar
 
     after="$(stat -c %Y "${cache_file}")"
