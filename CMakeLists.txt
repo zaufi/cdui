@@ -142,6 +142,14 @@ foreach(file IN ITEMS build-index.jq cdui-feed.sh validate-manifest.jq)
     configure_file(${file} ${file} COPYONLY)
 endforeach()
 
+# Also, link plugins dir, so `cdui-feed.sh` can find plugins
+add_custom_target(link_assets ALL
+    COMMAND
+        ${CMAKE_COMMAND} -E create_symlink
+        ${PROJECT_SOURCE_DIR}/cdui.d
+        ${PROJECT_BINARY_DIR}/cdui.d
+  )
+
 #---------------------------------------------------------
 # Section: Install project files
 #---------------------------------------------------------
