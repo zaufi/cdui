@@ -1,0 +1,9 @@
+{
+  "id": "env",
+  "options": ["--env", "-e"],
+  "hotkey": "CTRL-E",
+  "description": "Env dirs 🌿",
+  "icon": "⚙️",
+  "order": 4,
+  "entrypoint": "env.sh:cdui.env.get_dirs"
+}
