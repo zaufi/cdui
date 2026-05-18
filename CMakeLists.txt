@@ -180,11 +180,7 @@ if(BUILD_TESTING)
         DOC "Bash Automated Testing System"
       )
 
-    add_test(
-        NAME cduilib_test
-        COMMAND "${BATS_EXECUTABLE}" "${PROJECT_SOURCE_DIR}/tests/cduilib_tests.bats"
-        WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
-      )
+    add_subdirectory(tests)
 endif()
 
 #---------------------------------------------------------

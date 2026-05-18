@@ -1,0 +1,9 @@
+{
+  "id": "unit_test",
+  "options": ["--unit-test", "-s"],
+  "hotkey": "CTRL-U",
+  "description": "Unit test plugin",
+  "icon": "🔧",
+  "order": 1,
+  "entrypoint": "unit-test.sh:cdui.unit_test.get_test"
+}

@@ -6,7 +6,7 @@ set -eo pipefail
 
 # shellcheck disable=SC2155
 declare -r CDUI_SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
-declare -r CDUI_PLUGIN_DIR="${CDUI_SCRIPT_DIR}"/cdui.d
+declare -r CDUI_PLUGIN_DIR="${CDUI_PLUGIN_DIR:-${CDUI_SCRIPT_DIR}/cdui.d}"
 
 if [[ -f ${CDUI_SCRIPT_DIR}/cduilib.sh ]]; then
     # shellcheck source=./cduilib.sh

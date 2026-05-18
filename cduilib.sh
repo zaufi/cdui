@@ -195,3 +195,17 @@ function cdui.die()
     fi
 }
 # END Error reporting helpers
+
+#
+# Convert a single entry + path pair into a JSON array item.
+#
+# @param $1 -- entry label to show
+# @param $2 -- directory path used as the entry URL
+#
+function cdui.mkentry()
+{
+    local -r _entry="$1"
+    local -r _url="$2"
+
+    jq -cn --arg entry "${_entry}" --arg url "${_url}" '[{entry: $entry, url: $url}]'
+}
