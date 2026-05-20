@@ -1,0 +1,9 @@
+{
+  "id": "git_worktrees",
+  "options": ["--git-worktrees", "-g"],
+  "hotkey": "CTRL-G",
+  "description": "Git work trees ",
+  "icon": "󰊢",
+  "order": 3,
+  "entrypoint": "git-worktrees.sh:cdui.git_worktrees.get_dirs"
+}
