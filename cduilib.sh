@@ -112,14 +112,13 @@ function cdui.color2numbers()
 
 function cdui.color2ansi()
 {
-    [[ -z ${NO_COLOR:-} && ${TERM:-} != 'dumb' ]] || return 0
+    [[ -z ${NO_COLOR:-} && ${TERM:-} != 'dumb' ]] || return
 
     local codes
     codes=$(cdui.color2numbers "$@")
     if [[ -n ${codes} ]]; then
         printf '\033[%sm' "${codes}"
     fi
-    return 0
 }
 # END Color string parser
 
