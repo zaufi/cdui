@@ -13,6 +13,7 @@ function _cdui.env.resolve_path()
 {
     local -r _path="$1"
 
+    # shellcheck disable=SC2088
     case "${_path}" in
         '~')
             printf '%s\n' "${HOME}"
