@@ -27,7 +27,7 @@ function _cdui.mc_hotlist_converter()
 #
 function _cdui.mc_hotlist_cache_file()
 {
-    echo "$(cdui_cache_dir)"/mc-hotlist.json
+    echo "$(cdui.cache.dir)"/mc-hotlist.json
 }
 
 #
@@ -47,7 +47,7 @@ function _cdui.mc_hotlist_refresh_cache()
         return 1
     fi
 
-    local -r cache_dir=$(cdui_cache_dir)
+    local -r cache_dir=$(cdui.cache.dir)
     local -r cache_file=$(_cdui.mc_hotlist_cache_file)
     mkdir -p -- "${cache_dir}"
 

@@ -24,7 +24,7 @@ function _cdui.recent.dirs_count()
 #
 function _cdui.recent.cache_file()
 {
-    echo "$(cdui_cache_dir)"/recent-dirs.json
+    echo "$(cdui.cache.dir)"/recent-dirs.json
 }
 
 #
@@ -32,7 +32,7 @@ function _cdui.recent.cache_file()
 #
 function _cdui.recent.stats_file()
 {
-    echo "$(cdui_cache_dir)"/recent-dirs.bash
+    echo "$(cdui.cache.dir)"/recent-dirs.bash
 }
 
 #
@@ -54,7 +54,7 @@ function _cdui.recent.load_dirs_stats()
 #
 function _cdui.save_recent_dirs_stats()
 {
-    mkdir -p -- "$(cdui_cache_dir)"
+    mkdir -p -- "$(cdui.cache.dir)"
 
     local -r stats_file=$(_cdui.recent.stats_file)
     local tmp_file
@@ -78,7 +78,7 @@ function _cdui.save_recent_dirs_stats()
 function _cdui.recent.refresh_dirs_cache()
 {
 
-    mkdir -p -- "$(cdui_cache_dir)"
+    mkdir -p -- "$(cdui.cache.dir)"
 
     local -r cache_file=$(_cdui.recent.cache_file)
     local -r recent_dirs_count=$(_cdui.recent.dirs_count)

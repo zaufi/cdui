@@ -154,6 +154,7 @@ function cdui.config.load()
 
     local -r config_cache_file=$(cdui.cache.config_file)
     if [[ ! -f ${config_cache_file} || ${config_file} -nt ${config_cache_file} ]]; then
+        mkdir -p -- "$(cdui.cache.dir)"
         yq eval -o=json '.' "${config_file}" \
           | jq -r '
                 paths(type != "object" and type != "array") as $path
