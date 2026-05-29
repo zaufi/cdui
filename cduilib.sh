@@ -205,7 +205,11 @@ function cdui.die()
 function cdui.mkentry()
 {
     local -r _entry="$1"
-    local -r _url="$2"
+    local -r _url_or_message="$2"
 
-    jq -cn --arg entry "${_entry}" --arg url "${_url}" '[{entry: $entry, url: $url}]'
+    if [[ ${_entry} == 'error' ]]; then
+        jq -cn --arg entry "${_entry}" --arg message "${_url_or_message}" '[{error: $message}]'
+    else
+        jq -cn --arg entry "${_entry}" --arg url "${_url_or_message}" '[{entry: $entry, url: $url}]'
+    fi
 }
