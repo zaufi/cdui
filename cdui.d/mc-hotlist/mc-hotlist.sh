@@ -27,41 +27,50 @@ function _cdui.mc_hotlist_converter()
 #
 function _cdui.mc_hotlist_cache_file()
 {
-    echo "$(cdui.cache.dir)"/mc-hotlist.json
+    local -r hotlist_file="$(_cdui.mc_hotlist_file)"
+    echo "$(cdui.cache.dir)"/"${hotlist_file//[^[:alnum:]_-]/_}".json
 }
 
 #
 # Rebuild the hotlist JSON cache when the source file or converter changes.
 #
-function _cdui.mc_hotlist_refresh_cache()
+function _cdui.mc_hotlist_ensure_fresh_cache()
 {
-    local -r hotlist=$(_cdui.mc_hotlist_file)
-    if [[ ! -r ${hotlist} ]]; then
-        printf 'cdui: hotlist file is not readable: %s\n' "${hotlist}" >&2
-        return 1
-    fi
-
     local -r converter=$(_cdui.mc_hotlist_converter)
     if [[ ! -r ${converter} ]]; then
-        printf 'cdui: converter is not readable: %s\n' "${converter}" >&2
-        return 1
+        # NOTE Broken installation!?
+        cdui.die "converter is not readable: ${converter}"
     fi
 
     local -r cache_dir=$(cdui.cache.dir)
-    local -r cache_file=$(_cdui.mc_hotlist_cache_file)
     mkdir -p -- "${cache_dir}"
 
-    if [[ ! -e ${cache_file} || ${hotlist} -nt ${cache_file} || ${converter} -nt ${cache_file} ]]; then
-        local tmp_file
-        tmp_file=$(mktemp "${cache_file}.XXXXXX") || return
-        if ! awk -f "${converter}" "${hotlist}" > "${tmp_file}"; then
-            rm -f -- "${tmp_file}"
-            return 1
-        fi
-        mv -f -- "${tmp_file}" "${cache_file}"
+    local -r cache_file=$(_cdui.mc_hotlist_cache_file)
+    local -r hotlist=$(_cdui.mc_hotlist_file)
+    if [[
+        -r ${hotlist}
+     && -s ${cache_file}
+     && ! ${hotlist} -nt ${cache_file}
+     && ! ${converter} -nt ${cache_file}
+     ]]; then
+        return
     fi
 
-    echo "${cache_file}"
+    local tmp_file
+    # NOTE The only case when this function can fail
+    # TODO How to handle this properly? :-()
+    tmp_file=$(mktemp "${cache_file}.XXXXXX") || return 1
+
+    if [[ ! ( -f ${hotlist} && -r ${hotlist} ) ]]; then
+        cdui.mkentry error "hotlist file is missed or not readable: ${hotlist}" >"${tmp_file}"
+    else
+        if ! awk -f "${converter}" "${hotlist}" > "${tmp_file}"; then
+            # NOTE Smth terribly wrong with conversion script %-)
+            # Shouldn't happen normally ;-)
+            cdui.mkentry error "error on converting: ${hotlist}" >"${tmp_file}"
+        fi
+    fi
+    mv -f -- "${tmp_file}" "${cache_file}"
 }
 
 #
@@ -69,19 +78,6 @@ function _cdui.mc_hotlist_refresh_cache()
 #
 function cdui.mc_hotlist.get_dirs()
 {
-    local -r cache_file=$(_cdui.mc_hotlist_cache_file)
-
-    if [[ ! -r ${cache_file} ]]; then
-        _cdui.mc_hotlist_refresh_cache || {
-            printf '[]\n'
-            return 0
-        }
-    elif [[ "$(_cdui.mc_hotlist_file)" -nt ${cache_file} ]]; then
-        _cdui.mc_hotlist_refresh_cache || {
-            printf '[]\n'
-            return 0
-        }
-    fi
-
-    cat "${cache_file}"
+    _cdui.mc_hotlist_ensure_fresh_cache
+    cat "$(_cdui.mc_hotlist_cache_file)"
 }

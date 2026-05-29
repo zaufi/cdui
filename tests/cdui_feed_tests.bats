@@ -6,7 +6,7 @@ setup() {
     bats_load_library bats-assert
     bats_load_library bats-file
 
-    export HOME="${BATS_FILE_TMPDIR}"/home
+    export HOME="${BATS_FILE_TMPDIR}"/"${BATS_TEST_NAME}"/home
     mkdir -p "${HOME}"
 
     export XDG_CONFIG_HOME="${HOME}"/xdg-config
