@@ -1,6 +1,6 @@
 {
   "id": "recent",
-  "options": ["--recent", "-r"],
+  "options": ["-r", "--recent"],
   "hotkey": "CTRL-R",
   "description": "Recent dirs 🔁",
   "icon": "🔁",

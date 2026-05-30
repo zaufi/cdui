@@ -1,6 +1,6 @@
 {
   "id": "env",
-  "options": ["--env", "-e"],
+  "options": ["-e", "--env"],
   "hotkey": "CTRL-E",
   "description": "Env dirs 🌿",
   "icon": "⚙️",

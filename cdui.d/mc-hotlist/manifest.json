@@ -1,6 +1,6 @@
 {
   "id": "mc_hotlist",
-  "options": ["--mc-hotlist", "-m"],
+  "options": ["-m", "--mc-hotlist"],
   "hotkey": "CTRL-H",
   "description": "Hot dirs 🔥",
   "icon": "🔥",

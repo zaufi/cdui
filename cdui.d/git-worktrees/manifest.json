@@ -1,6 +1,6 @@
 {
   "id": "git_worktrees",
-  "options": ["--git-worktrees", "-g"],
+  "options": ["-g", "--git-worktrees"],
   "hotkey": "CTRL-G",
   "description": "Git work trees ",
   "icon": "󰊢",
