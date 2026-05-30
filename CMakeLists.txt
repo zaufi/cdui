@@ -138,7 +138,15 @@ add_custom_target(render-cduilib ALL DEPENDS "${CDUILIB_BASH}")
 # END Render the final cduilib.sh
 
 # To run scripts from the build tree, some files must be there
-foreach(file IN ITEMS build-index.jq cdui.sh cdui-feed.sh validate-manifest.jq)
+set(
+    files2copy
+    build-index.jq
+    cdui.sh
+    cdui-feed.sh
+    cdui-format-table.jq
+    validate-manifest.jq
+  )
+foreach(file IN LISTS files2copy)
     configure_file(${file} ${file} COPYONLY)
 endforeach()
 

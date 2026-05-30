@@ -24,63 +24,6 @@ if [[ ! -f ${_CDUI_FEED_SCRIPT} ]]; then
     die "Missed file: ${_CDUI_FEED_SCRIPT}"
 fi
 
-# shellcheck disable=SC2016
-declare -x _CDUI_JQ_TABLE='
-  def pad($w): . + (" " * ($w - (. | length)));
-  def color_url($prefix; $suffix): $prefix + . + $suffix;
-  def display_url($url):
-    if $home != "" and ($url | startswith($home)) then
-      "~" + ($url[$home|length:])
-    else
-      $url
-    end;
-  def pluralize($count; $unit): "\($count) \($unit)\(if $count == 1 then "" else "s" end) ago";
-  def ago_time:
-    . as $timestamp
-    | (now - $timestamp | floor) as $elapsed
-    | if $elapsed <= 0 then "just now"
-      elif $elapsed < 60 then pluralize($elapsed; "second")
-      elif $elapsed < 3600 then pluralize(($elapsed / 60 | floor); "minute")
-      elif $elapsed < 86400 then pluralize(($elapsed / 3600 | floor); "hour")
-      elif $elapsed < 604800 then pluralize(($elapsed / 86400 | floor); "day")
-      elif $elapsed < 2592000 then pluralize(($elapsed / 604800 | floor); "week")
-      elif $elapsed < 31536000 then pluralize(($elapsed / 2592000 | floor); "month")
-      else pluralize(($elapsed / 31536000 | floor); "year")
-      end;
-  def entry_to_display:
-    if type == "number" then
-      ago_time
-    elif type == "string" and test("^[0-9]{10}(\\.[0-9]+)?$") then
-      tonumber | ago_time
-    else
-      tostring
-    end;
-
-  map([.origin, (.entry | entry_to_display), .url, (.missing_url // false)]) as $rows
-  | [
-      ($rows | map(.[0] | length) | max),
-      ($rows | map(.[1] | length) | max)
-    ] as $w
-  | $rows[]
-  | [
-      (.[0] | pad($w[0])),
-      (.[1] | pad($w[1])),
-      (
-        .[2] as $url
-        | display_url($url) as $shown_url
-        | if .[3] then
-            ($shown_url | color_url($missed_url_color; $reset_color))
-        elif $url == $pwd then
-          ($shown_url | color_url($current_url_color; $reset_color))
-        else
-            ($shown_url | color_url($url_color_prefix; $reset_color))
-          end
-      ),
-    .[2]
-    ]
-  | @tsv
-'
-
 # BEGIN Internal helper functions
 function _cdui.hotkey_to_skim_bind_key()
 {
@@ -96,25 +39,20 @@ function _cdui.get_ui_hints()
 }
 export -f _cdui.get_ui_hints
 
-function _cdui.format_table()
-{
-    jq -r \
-      --arg pwd "${PWD}" \
-      --arg home "${HOME}" \
-      --arg current_url_color "$(cdui.config.color.current_url)" \
-      --arg missed_url_color "$(cdui.config.color.missed_url)" \
-      --arg url_color_prefix "$(cdui.config.color.url)" \
-      --arg reset_color "$(cdui.color2ansi reset)" \
-      "${_CDUI_JQ_TABLE}"
-}
-export -f _cdui.format_table
-
 function _cdui.feed()
 {
     local -r _cli_option="$1"
 
     # shellcheck disable=SC2086,SC2154
-    bash ${_cdui_on_trace} "${_CDUI_FEED_SCRIPT}" "${_cli_option}" | _cdui.format_table
+    bash ${_cdui_on_trace} "${_CDUI_FEED_SCRIPT}" "${_cli_option}" \
+      | jq \
+            --arg pwd "${PWD}" \
+            --arg home "${HOME}" \
+            --arg current_url_color "$(cdui.config.color.current_url)" \
+            --arg missed_url_color "$(cdui.config.color.missed_url)" \
+            --arg url_color_prefix "$(cdui.config.color.url)" \
+            --arg reset_color "$(cdui.color2ansi reset)" \
+            -ref "${_CDUI_SCRIPT_DIR}"/cdui-format-table.jq
 }
 export -f _cdui.feed
 
