@@ -109,7 +109,14 @@ function execute_entrypoint()
 function print_ui_hint()
 {
     local -r json="${1}"
-    jq -r '.[] | "\(.hotkey) \(.description)"' <<<"${json}"
+    jq '
+        sort_by(.order)
+      | map({
+            hotkey
+          , description
+          , cli_option: .options[0]
+          })
+      ' <<<"${json}"
 }
 
 function print_help()
