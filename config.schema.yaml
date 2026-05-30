@@ -14,21 +14,36 @@ properties:
     additionalProperties: false
 
     properties:
+
       error: &error
         type: string
         default: red
-
-      option: &white
-        type: string
-        default: white
 
       url:
         type: string
         default: cyan
 
-      current-url: *white
+      current-url: &white
+        type: string
+        default: white
 
       missed-url: *error
+
+      help:
+        type: object
+        additionalProperties: false
+        properties:
+
+          usage:
+            type: string
+            default: bold
+
+          option: *white
+          command: *white
+
+          description:
+            type: string
+            default: italic
 
   plugins:
     type: object

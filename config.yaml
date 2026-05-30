@@ -2,9 +2,15 @@
 # SPDX-License-Identifier: CC0-1.0
 
 color:
+  help:
+    usage: bold
+    command: white dim
+    option: white dim
+    description: italic
   url: cyan italic
-  current-url: gray dim italic
+  current-url: white dim italic
   missed-url: red italic strike
+  error: red
 
 plugins:
   env:
