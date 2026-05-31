@@ -43,6 +43,8 @@ function _cdui.feed()
 {
     local -r _cli_option="$1"
 
+    cdui.config.load
+
     # shellcheck disable=SC2086,SC2154
     bash ${_cdui_on_trace} "${_CDUI_FEED_SCRIPT}" "${_cli_option}" \
       | jq \
