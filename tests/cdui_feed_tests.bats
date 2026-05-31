@@ -63,6 +63,22 @@ setup() {
     assert_output '🔧'
 }
 
+@test '_cdui.feed marks missing URLs with missed URL color' {
+    unset NO_COLOR
+    export TERM=xterm-256color
+    export CDUI_UNIT_TEST_URL="${BATS_FILE_TMPDIR}"/missing-dir
+    cat >"${XDG_CONFIG_HOME}"/cdui/config.yaml <<EOF
+color:
+  url: green
+  missed-url: red italic strike
+EOF
+
+    run bash -c '. ./cdui.sh; _cdui.feed "$1"' this-is-arg0 -s
+
+    assert_success
+    assert_output --partial $'\033[31;3;9m'"${CDUI_UNIT_TEST_URL}"$'\033[0m'
+}
+
 @test 'cdui-feed help screen shows disabled plugin' {
     cp --reflink=auto -vf "${BATS_TEST_DIRNAME}"/disabled-all-config.yaml "${XDG_CONFIG_HOME}"/cdui/config.yaml
 

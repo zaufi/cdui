@@ -6,5 +6,5 @@
 
 function cdui.unit_test.get_test()
 {
-    cdui.mkentry unit /test
+    cdui.mkentry unit "${CDUI_UNIT_TEST_URL:-/test}"
 }

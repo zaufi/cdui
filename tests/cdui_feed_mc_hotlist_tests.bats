@@ -79,16 +79,20 @@ setup() {
 @test 'mc-hotlist reload path uses user URL colors' {
     unset NO_COLOR
     export TERM=xterm-256color
+    mkdir -p "${BATS_TEST_TMPDIR}"/unit-test
+    cat >"${XDG_CONFIG_HOME}"/test-hotlist <<EOF
+ENTRY "Unit Test" URL "${BATS_TEST_TMPDIR}/unit-test"
+EOF
     cat >"${XDG_CONFIG_HOME}"/cdui/config.yaml <<EOF
 color:
   url: green italic
 EOF
 
-    CDUI_MC_HOTLIST="${BATS_TEST_DIRNAME}"/test-hotlist \
+    CDUI_MC_HOTLIST="${XDG_CONFIG_HOME}"/test-hotlist \
     run bash -c '. ./cdui.sh; _cdui.feed "$1"' this-is-arg0 -m
 
     assert_success
-    assert_output --partial $'\033[32;3m/unit-test\033[0m'
+    assert_output --partial $'\033[32;3m'"${BATS_TEST_TMPDIR}"'/unit-test'$'\033[0m'
 }
 
 # kate: hl bash;

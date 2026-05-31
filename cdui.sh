@@ -39,6 +39,22 @@ function _cdui.get_ui_hints()
 }
 export -f _cdui.get_ui_hints
 
+function _cdui.mark_missing_urls()
+{
+    local _entry
+    local _url
+
+    while IFS= read -r _entry; do
+        _url=$(jq -r '.url // empty' <<<"${_entry}")
+        if [[ -n ${_url} && ! -d ${_url} ]]; then
+            jq -c '. + {missing_url: true}' <<<"${_entry}"
+        else
+            printf '%s\n' "${_entry}"
+        fi
+    done < <(jq -c '.[]') | jq -s '.'
+}
+export -f _cdui.mark_missing_urls
+
 function _cdui.feed()
 {
     local -r _cli_option="$1"
@@ -47,6 +63,7 @@ function _cdui.feed()
 
     # shellcheck disable=SC2086,SC2154
     bash ${_cdui_on_trace} "${_CDUI_FEED_SCRIPT}" "${_cli_option}" \
+      | _cdui.mark_missing_urls \
       | jq \
             --arg pwd "${PWD}" \
             --arg home "${HOME}" \
