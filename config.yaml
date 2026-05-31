@@ -24,8 +24,17 @@ plugins:
     order: 3
     hotkey: CTRL-G
     color:
-      dirty: yellow
-      green: green
+      clean: bright_green
+      untracked: green dim
+      modified: yellow
+      staged: cyan
+      conflict: bright_red underline
+      detached: magenta strike italic
+      rebase: bright_blue italic
+      merge: bright_blue italic
+      cherry_pick: bright_magenta italic
+      revert: bright_cyan italic
+      bisect: bright_white italic
 
   mc-hotlist:
     enable: true
