@@ -176,6 +176,12 @@ install(
     DESTINATION "${CMAKE_INSTALL_LIBEXECDIR}/${PROJECT_NAME}"
   )
 
+install(
+    FILES config.yaml
+    DESTINATION "${CMAKE_INSTALL_DATADIR}/${PROJECT_NAME}"
+    RENAME config-example.yaml
+  )
+
 #---------------------------------------------------------
 # Section: Testing
 #---------------------------------------------------------
