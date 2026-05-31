@@ -12,6 +12,11 @@ add_test(
     WORKING_DIRECTORY "${PROJECT_BINARY_DIR}"
   )
 add_test(
+    NAME "cdui table formatter test"
+    COMMAND "${BATS_EXECUTABLE}" "${PROJECT_SOURCE_DIR}/tests/cdui_format_table_tests.bats"
+    WORKING_DIRECTORY "${PROJECT_BINARY_DIR}"
+  )
+add_test(
     NAME "mc-hotlist feed test"
     COMMAND "${BATS_EXECUTABLE}" "${PROJECT_SOURCE_DIR}/tests/cdui_feed_mc_hotlist_tests.bats"
     WORKING_DIRECTORY "${PROJECT_BINARY_DIR}"

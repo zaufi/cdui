@@ -3,7 +3,19 @@
 
 def pad($w): . + (" " * ($w - (. | length)));
 
-def color_url($prefix; $suffix): $prefix + . + $suffix;
+def color_url($prefix; $suffix):
+  if $prefix != "" then
+    $prefix + . + $suffix
+  else
+    .
+  end;
+
+def color_entry($prefix; $suffix):
+  if $prefix != "" then
+    $prefix + . + $suffix
+  else
+    .
+  end;
 
 def display_url($url):
   if $home != "" and ($url | startswith($home)) then
@@ -36,7 +48,7 @@ def entry_to_display:
     tostring
   end;
 
-map([.origin, (.entry | entry_to_display), .url, (.missing_url // false)]) as $rows
+map([.origin, (.entry | entry_to_display), .url, (.missing_url // false), (.entry_color // "")]) as $rows
   | [
       ($rows | map(.[0] | length) | max),
       ($rows | map(.[1] | length) | max)
@@ -44,7 +56,7 @@ map([.origin, (.entry | entry_to_display), .url, (.missing_url // false)]) as $r
   | $rows[]
   | [
       (.[0] | pad($w[0])),
-      (.[1] | pad($w[1])),
+      (.[4] as $entry_color | .[1] | pad($w[1]) | color_entry($entry_color; $reset_color)),
       (
         .[2] as $url
         | display_url($url) as $shown_url
