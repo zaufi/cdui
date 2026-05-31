@@ -197,19 +197,32 @@ function cdui.die()
 # END Error reporting helpers
 
 #
-# Convert a single entry + path pair into a JSON array item.
+# Convert a single entry + value pair into a JSON array item.
 #
-# @param $1 -- entry label to show
-# @param $2 -- directory path used as the entry URL
+# @param $1 -- entry label (or literal "error" for error entries)
+# @param $2 -- directory path or message (path for normal entries, message for errors)
+# @param $3 -- optional entry color (only applied to normal entries)
+#
+# Output:
+#   - Normal: [{entry: ..., url: ..., entry_color?: ...}]
+#   - Error:  [{error: ...}]
 #
 function cdui.mkentry()
 {
     local -r _entry="$1"
     local -r _url_or_message="$2"
+    local -r _color="${3:-}"
 
     if [[ ${_entry} == 'error' ]]; then
-        jq -cn --arg entry "${_entry}" --arg message "${_url_or_message}" '[{error: $message}]'
+        jq -cn --arg message "${_url_or_message}" '[{error: $message}]'
     else
-        jq -cn --arg entry "${_entry}" --arg url "${_url_or_message}" '[{entry: $entry, url: $url}]'
+        jq -cn \
+            --arg entry "${_entry}" \
+            --arg url "${_url_or_message}" \
+            --arg color "${_color}" \
+            '[
+                {entry: $entry, url: $url}
+              + (if $color != "" then {entry_color: $color} else {} end)
+              ]'
     fi
 }
