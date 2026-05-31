@@ -111,7 +111,7 @@ function cdui()
                 --delimiter $'\t' \
                 --with-nth 1,2,3 \
                 --prompt='📁 Select a directory to jump into〉' \
-                --border=rounded \
+                --border="$(cdui.config.border)" \
                 "${_cdui_reload_bindings[@]}" \
                 --header "$(_cdui.make_header)" \
           | cut -f4
