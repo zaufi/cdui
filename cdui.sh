@@ -77,6 +77,8 @@ declare -a _cdui_reload_bindings=()
 declare -a _cdui_header_parts=()
 function cdui()
 {
+    cdui.config.load
+
     _cdui_reload_bindings=()
     _cdui_header_parts=()
     # What to show first, comes first in the `cdui-feed.sh --ui-hint` output.
