@@ -19,14 +19,12 @@
   | "ERR_DUP_KEY\t\(.)"
 ),
 
-# --- option -> entrypoint mapping ---
+# --- plugin data ---
 ( .[]
+  | .id as $id
   | .entrypoint as $e
+  | .icon as $c
+  | (.enabled // true) as $s
   | .options[]
-  | "MAP\t\(.)\t\($e)"
-),
-
-# --- entrypoint -> icon mapping ---
-( .[]
-  | "ICON\t\(.entrypoint)\t\(.icon)"
+  | "DATA\t\($id)\t\($e)\t\(.)\t\($s)\t\($c)"
 )

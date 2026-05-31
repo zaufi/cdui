@@ -63,4 +63,28 @@ setup() {
     assert_output '🔧'
 }
 
+@test 'cdui-feed help screen shows disabled plugin' {
+    cp --reflink=auto -vf "${BATS_TEST_DIRNAME}"/disabled-all-config.yaml "${XDG_CONFIG_HOME}"/cdui/config.yaml
+
+    run bash cdui-feed.sh
+    assert_success
+    assert_output --partial 'disabled via user config'
+}
+
+@test 'cdui-feed no UI hint for disabled plugin' {
+    cp --reflink=auto -vf "${BATS_TEST_DIRNAME}"/disabled-all-config.yaml "${XDG_CONFIG_HOME}"/cdui/config.yaml
+
+    run bash cdui-feed.sh --ui-hint
+    assert_success
+    assert_output '[]'
+}
+
+@test 'cdui-feed disabled plugin test' {
+    cp --reflink=auto -vf "${BATS_TEST_DIRNAME}"/disabled-all-config.yaml "${XDG_CONFIG_HOME}"/cdui/config.yaml
+
+    run bash cdui-feed.sh -s
+    assert_failure
+    assert_output --partial "Requested plugin is disabled via user's configuration"
+}
+
 # kate: hl bash;

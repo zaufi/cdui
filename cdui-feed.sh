@@ -44,13 +44,6 @@ function load_manifests()
     jq -s 'sort_by(.order)' "${valid_files[@]}"
 }
 
-function build_index()
-{
-    local -r json="${1}"
-
-    jq -rf "${CDUI_SCRIPT_DIR}"/build-index.jq <<<"${json}"
-}
-
 function resolve_script_path()
 {
     local -r script="${1}"
@@ -93,7 +86,7 @@ function execute_entrypoint()
     local -r script_path="$(resolve_script_path "${script}")"
 
     # shellcheck disable=SC1090
-    source "${script_path}"
+    . "${script_path}"
 
     if ! declare -F "${func}" >/dev/null; then
         cdui.die "Function '${func}' not found in ${script_path}"
@@ -110,7 +103,8 @@ function print_ui_hint()
 {
     local -r json="${1}"
     jq '
-        sort_by(.order)
+        map(select(.enabled != false))
+      | sort_by(.order)
       | map({
             hotkey
           , description
@@ -127,67 +121,122 @@ function print_help()
     local opt desc row
     local max_len=0
 
-    echo "Usage: $(basename "$0") [OPTIONS]"
-    echo
+    printf '%sUsage:%s %s%s [OPTIONS]%s\n\n' \
+        "$(cdui.config.color.help.usage)" \
+        "$(cdui.color2ansi reset)" \
+        "$(cdui.config.color.help.command)" \
+        "$(basename "${BASH_SOURCE[0]}")" \
+        "$(cdui.color2ansi reset)"
 
     rows+=("--help"$'\t'"Show this help screen")
     rows+=("--ui-hint"$'\t'"Show UI hints")
     rows+=("--update PATH"$'\t'"Run plugin update hooks for the selected directory")
 
     while IFS=$'\t' read -r opt desc; do
-        rows+=("${opt}"$'\t'"Use '${desc}' feed")
+        rows+=("${opt}"$'\t'"${desc}")
     done < <(
         jq -r '
           .[]
           | . as $p
-          | [ ($p.options | join(", ")), $p.description ]
+          | [
+                ($p.options | join(", "))
+              , (
+                    "Use " + $p.description + " feed"
+                  + (
+                        if $p.enabled == false
+                        then " (disabled via user config)"
+                        else ""
+                        end
+                    )
+                )
+            ]
           | @tsv
         ' <<<"${json}"
-    )
+      )
 
     for row in "${rows[@]}"; do
         IFS=$'\t' read -r opt desc <<<"${row}"
         (( ${#opt} > max_len )) && max_len=${#opt}
     done
 
-    echo "Options:"
+    printf '%sOptions:%s\n' "$(cdui.config.color.help.usage)" "$(cdui.color2ansi reset)"
     for row in "${rows[@]}"; do
         IFS=$'\t' read -r opt desc <<<"${row}"
-        printf "  %-*s  %s\n" "${max_len}" "${opt}" "${desc}"
+        printf "  %s%-*s%s  %s%s%s\n" \
+            "$(cdui.config.color.help.option)" \
+            "${max_len}" "${opt}" \
+            "$(cdui.color2ansi reset)" \
+            "$(cdui.config.color.help.description)" \
+            "${desc}" \
+            "$(cdui.color2ansi reset)"
     done
+
+    local config_status=
+    if [[ ! -r $(cdui.config.file) ]]; then
+        config_status=' (missed)'
+    fi
+    printf '\n%sUser config file:%s %s%s%s%s\n\n' \
+        "$(cdui.config.color.help.usage)" \
+        "$(cdui.color2ansi reset)" \
+        "$(cdui.config.color.help.option)" \
+        "$(cdui.config.file)" \
+        "$(cdui.color2ansi reset)" \
+        "${config_status}"
 }
 # END Helper functions
 
 # Execution
+cdui.config.load
 
 # shellcheck disable=SC2155
-declare -r PLUGINS_JSON="$(load_manifests)"
+declare PLUGINS_JSON="$(load_manifests)"
 declare -A OPTION_TO_ENTRYPOINT
 declare -A ENTRYPOINT_TO_ICON
-while IFS=$'\t' read -r kind a b; do
+declare -A ENTRYPOINT_TO_STATE
+while IFS=$'\t' read -r kind plugin_id ep options enabled icon; do
     case "${kind}" in
         ERR_DUP_OPT)
-            cdui.die "Duplicate CLI option: ${a}"
+            cdui.die "Duplicate CLI option: ${options}"
             ;;
         ERR_DUP_KEY)
-            cdui.die "Duplicate hotkey: ${a}"
+            cdui.die "Duplicate hotkey: ${options}"
             ;;
-        MAP)
-            OPTION_TO_ENTRYPOINT["${a}"]="${b}"
-            ;;
-        ICON)
-            ENTRYPOINT_TO_ICON["${a}"]="${b}"
+        DATA)
+            OPTION_TO_ENTRYPOINT["${options}"]="${ep}"
+            ENTRYPOINT_TO_ICON["${ep}"]="${icon}"
+
+            if [[
+                ${enabled} == 'true'
+              && $(type -t "cdui.config.plugins.${plugin_id}.enabled") == 'function'
+              ]]; then
+                # Reevaluate enabled state as defined in the user's config
+                enabled="$(cdui.config.plugins."${plugin_id}".enabled)"
+            fi
+            ENTRYPOINT_TO_STATE["${ep}"]="${enabled}"
+            # Also, inject the enabled state back to the JSON,
+            # so UI hits printer can exclude disabled plugins.
+            PLUGINS_JSON=$(
+                jq \
+                    --arg plugin_id "$plugin_id" \
+                    --argjson enabled "$enabled" \
+                    '
+                        map(
+                            if .id == $plugin_id
+                            then . + {enabled: $enabled}
+                            else .
+                            end
+                        )
+                    ' <<<"${PLUGINS_JSON}"
+              )
             ;;
     esac
-done < <(build_index "${PLUGINS_JSON}") || true
+done < <(jq -rf "${CDUI_SCRIPT_DIR}"/build-index.jq <<<"${PLUGINS_JSON}") || true
 
 # Show help screen if no options given
 if [[ $# -eq 0 ]]; then
     print_help "${PLUGINS_JSON}"
     exit 0
 fi
-
-cdui.config.load
 
 declare -i ui_hint=0
 declare update_path=''
@@ -233,12 +282,12 @@ done
 
 if [[ -n "${update_path}" ]]; then
     if [[ ${#selected_entrypoints[@]} -gt 0 || ${ui_hint} -eq 1 ]]; then
-        cdui.die "--update cannot be combined with other options"
+        cdui.die '--update cannot be combined with other options'
     fi
 fi
 
 if [[ ${ui_hint} -eq 1 && ${#selected_entrypoints[@]} -gt 0 ]]; then
-    cdui.die "--ui-hint cannot be combined with plugin options"
+    cdui.die '--ui-hint cannot be combined with plugin options'
 fi
 
 # UI hint mode
@@ -249,14 +298,19 @@ fi
 
 # Update mode
 if [[ -n "${update_path}" ]]; then
-    while IFS= read -r ep; do
-        execute_entrypoint "${ep}" update_func "${update_path}"
-    done < <(jq -r '.[].entrypoint' <<<"${PLUGINS_JSON}")
+    for ep in "${!ENTRYPOINT_TO_ICON[@]}"; do
+        if [[ ${ENTRYPOINT_TO_STATE[${ep}]} == 'true' ]]; then
+            execute_entrypoint "${ep}" update_func "${update_path}"
+        fi
+    done
     exit 0
 fi
 
 # Normal execution
 for ep in "${selected_entrypoints[@]}"; do
+    if [[ ${ENTRYPOINT_TO_STATE[${ep}]} != 'true' ]]; then
+        cdui.die "Requested plugin is disabled via user's configuration"
+    fi
     # Get the JSON data from a plugin and append `origin` with a plugin icon
     # to all entries
     execute_entrypoint "${ep}" run_func \
