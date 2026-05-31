@@ -22,7 +22,7 @@ plugins:
     enable: true
     order: 3
     hotkey: CTRL-G
-    colors:
+    color:
       dirty: yellow
       green: green
 

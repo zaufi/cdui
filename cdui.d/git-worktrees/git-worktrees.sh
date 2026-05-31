@@ -5,15 +5,19 @@
 #
 
 # BEGIN Default config options
-function cdui.config.plugin.git_worktrees.green()
-{
-    cdui.color2ansi 'green'
-}
+if [[ $(type -t cdui.config.plugins.git_worktrees.color.green) != function ]]; then
+    function cdui.config.plugins.git_worktrees.color.green()
+    {
+        cdui.color2ansi 'green'
+    }
+fi
 
-function cdui.config.plugin.git_worktrees.dirty()
-{
-    cdui.color2ansi 'yellow'
-}
+if [[ $(type -t cdui.config.plugins.git_worktrees.color.dirty) != function ]]; then
+    function cdui.config.plugins.git_worktrees.color.dirty()
+    {
+        cdui.color2ansi 'yellow'
+    }
+fi
 # END Default config options
 
 #
@@ -27,9 +31,9 @@ function _cdui.git_worktrees.colorize_branch()
 
     local branch_color
     if [[ -z $(git -C "${worktree}" status --short 2>/dev/null) ]]; then
-        branch_color=$(cdui.config.plugin.git_worktrees.green)
+        branch_color=$(cdui.config.plugins.git_worktrees.color.green)
     else
-        branch_color=$(cdui.config.plugin.git_worktrees.dirty)
+        branch_color=$(cdui.config.plugins.git_worktrees.color.dirty)
     fi
 
     printf '%s' "${branch_color}"
