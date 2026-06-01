@@ -56,6 +56,16 @@ function cdui.color2numbers()
             token="${token#fg:}"
         fi
 
+        # default terminal color
+        if [[ "${token}" == default ]]; then
+            if [[ "${mode}" == fg ]]; then
+                codes+=(39)
+            else
+                codes+=(49)
+            fi
+            continue
+        fi
+
         # HEX color
         if [[ "${token}" =~ ^#([0-9a-fA-F]{6})$ ]]; then
             local hex="${BASH_REMATCH[1]}"

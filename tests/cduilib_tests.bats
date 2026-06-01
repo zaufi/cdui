@@ -51,6 +51,15 @@ setup() {
     bg_bright_red=$(cdui.color2numbers 'bg:bright_red')
     assert_equal "${bg_bright_red}" '101'
 
+    default=$(cdui.color2numbers default)
+    assert_equal "${default}" '39'
+
+    fg_default=$(cdui.color2numbers fg:default)
+    assert_equal "${fg_default}" '39'
+
+    bg_default=$(cdui.color2numbers bg:default)
+    assert_equal "${bg_default}" '49'
+
     bold_red=$(cdui.color2numbers 'bold red')
     assert_equal "${bold_red}" '1;31'
 
