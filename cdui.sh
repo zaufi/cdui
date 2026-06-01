@@ -39,7 +39,7 @@ function _cdui.get_ui_hints()
 }
 export -f _cdui.get_ui_hints
 
-function _cdui.mark_missing_urls()
+function _cdui.mark_missed_urls()
 {
     local _entry
     local _url
@@ -53,7 +53,7 @@ function _cdui.mark_missing_urls()
         fi
     done < <(jq -c '.[]') | jq -s '.'
 }
-export -f _cdui.mark_missing_urls
+export -f _cdui.mark_missed_urls
 
 function _cdui.feed()
 {
@@ -63,7 +63,7 @@ function _cdui.feed()
 
     # shellcheck disable=SC2086,SC2154
     bash ${_cdui_on_trace} "${_CDUI_FEED_SCRIPT}" "${_cli_option}" \
-      | _cdui.mark_missing_urls \
+      | _cdui.mark_missed_urls \
       | jq \
             --arg pwd "${PWD}" \
             --arg home "${HOME}" \
