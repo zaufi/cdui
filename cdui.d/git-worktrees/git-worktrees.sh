@@ -195,7 +195,7 @@ function _cdui.git_worktrees.colorize_branch()
 
     local color_fn="cdui.config.plugins.git_worktrees.color.${branch_state}"
     if [[ $(type -t "${color_fn}") == function ]]; then
-        cdui.color2ansi "$("${color_fn}")"
+        "${color_fn}"
     else
         cdui.color2ansi default
     fi
