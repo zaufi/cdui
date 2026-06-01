@@ -1,0 +1,7 @@
+# SPDX-FileCopyrightText: 2009-2026 Alex Turbov <i.zaufi@gmail.com>
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+# shellcheck source=cdui.sh
+. "@CMAKE_INSTALL_FULL_LIBEXECDIR@/@PROJECT_NAME@/@PROJECT_NAME@.sh"
+
+# kate: hl bash;

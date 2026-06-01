@@ -137,6 +137,8 @@ add_custom_command(
 add_custom_target(render-cduilib ALL DEPENDS "${CDUILIB_BASH}")
 # END Render the final cduilib.sh
 
+configure_file(${PROJECT_NAME}-profile.sh.in ${PROJECT_NAME}-profile.sh @ONLY)
+
 # To run scripts from the build tree, some files must be there
 set(
     files2copy
@@ -180,6 +182,17 @@ install(
     FILES config.yaml
     DESTINATION "${CMAKE_INSTALL_DATADIR}/${PROJECT_NAME}"
     RENAME config-example.yaml
+  )
+
+install(
+    FILES cdui.inputrc
+    DESTINATION "${CMAKE_INSTALL_FULL_SYSCONFDIR}"
+  )
+
+install(
+    FILES ${CMAKE_BINARY_DIR}/cdui-profile.sh
+    DESTINATION ${CMAKE_INSTALL_FULL_SYSCONFDIR}/profile.d
+    RENAME cdui.sh
   )
 
 #---------------------------------------------------------
