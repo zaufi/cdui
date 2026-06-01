@@ -167,10 +167,7 @@ add_custom_target(link_assets ALL
 install(
     FILES
         ${CDUILIB_BASH}
-        ${PROJECT_BINARY_DIR}/cdui.sh
-        ${PROJECT_BINARY_DIR}/build-index.jq
-        ${PROJECT_BINARY_DIR}/cdui-feed.sh
-        ${PROJECT_BINARY_DIR}/validate-manifest.jq
+        ${files2copy}
     DESTINATION "${CMAKE_INSTALL_LIBEXECDIR}/${PROJECT_NAME}"
   )
 
