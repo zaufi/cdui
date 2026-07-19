@@ -143,14 +143,14 @@ setup() {
     assert_equal "$(type -t cdui.config.color.current_url)" function
     assert_equal "$(cdui.config.color.current_url)" $'\033[2;3m'
 
-    assert_equal "$(type -t cdui.config.plugins.env.enable)" function
-    assert_equal "$(cdui.config.plugins.env.enable)" true
+    assert_equal "$(type -t cdui.config.plugins.env.enabled)" function
+    assert_equal "$(cdui.config.plugins.env.enabled)" true
 
     assert_equal "$(type -t cdui.config.plugins.env.order)" function
     assert_equal "$(cdui.config.plugins.env.order)" 4
 
-    assert_equal "$(type -t cdui.config.plugins.git_worktrees.enable)" function
-    assert_equal "$(cdui.config.plugins.git_worktrees.enable)" false
+    assert_equal "$(type -t cdui.config.plugins.git_worktrees.enabled)" function
+    assert_equal "$(cdui.config.plugins.git_worktrees.enabled)" false
 
     # Checking cache file
     cache_file="$(cdui.cache.config_file)"
@@ -158,11 +158,11 @@ setup() {
     assert_file_contains "${cache_file}" 'function cdui.config.color.url()'
     assert_file_contains "${cache_file}" 'function cdui.config.color.current_url()'
     assert_file_contains "${cache_file}" 'cdui.color2ansi '\''cyan italic'\'''
-    assert_file_contains "${cache_file}" 'function cdui.config.plugins.env.enable()'
+    assert_file_contains "${cache_file}" 'function cdui.config.plugins.env.enabled()'
     assert_file_contains "${cache_file}" 'function cdui.config.plugins.env.order()'
-    assert_file_contains "${cache_file}" 'function cdui.config.plugins.git_worktrees.enable()'
+    assert_file_contains "${cache_file}" 'function cdui.config.plugins.git_worktrees.enabled()'
     assert_file_not_contains "${cache_file}" 'function cdui.config.color.current-url()'
-    assert_file_not_contains "${cache_file}" 'function cdui.config.plugins.git-worktrees.enable()'
+    assert_file_not_contains "${cache_file}" 'function cdui.config.plugins.git-worktrees.enabled()'
     assert_file_not_contains "${cache_file}" 'CONFIG='
 }
 
@@ -176,9 +176,9 @@ setup() {
     before="$(stat -c %Y "${cache_file}")"
     unset -f cdui.config.color.url
     unset -f cdui.config.color.current_url
-    unset -f cdui.config.plugins.env.enable
+    unset -f cdui.config.plugins.env.enabled
     unset -f cdui.config.plugins.env.order
-    unset -f cdui.config.plugins.git_worktrees.enable
+    unset -f cdui.config.plugins.git_worktrees.enabled
 
     # NOTE Make sure the updated file get not the same modified time
     sleep 1
@@ -187,9 +187,9 @@ setup() {
     assert_file_exists "${cache_file}"
     assert_equal "$(cdui.config.color.url)" $'\033[36;3m'
     assert_equal "$(cdui.config.color.current_url)" $'\033[2;3m'
-    assert_equal "$(cdui.config.plugins.env.enable)" true
+    assert_equal "$(cdui.config.plugins.env.enabled)" true
     assert_equal "$(cdui.config.plugins.env.order)" 4
-    assert_equal "$(cdui.config.plugins.git_worktrees.enable)" false
+    assert_equal "$(cdui.config.plugins.git_worktrees.enabled)" false
 
     after="$(stat -c %Y "${cache_file}")"
     assert_equal "${before}" "${after}"

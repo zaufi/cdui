@@ -73,7 +73,7 @@ properties:
         type: object
         additionalProperties: true
         properties:
-          enable:
+          enabled:
             type: boolean
           order:
             type: integer

@@ -15,12 +15,12 @@ color:
 
 plugins:
   env:
-    enable: true
+    enabled: true
     order: 4
     hotkey: CTRL-E
 
   git-worktrees:
-    enable: true
+    enabled: true
     order: 3
     hotkey: CTRL-G
     color:
@@ -37,11 +37,11 @@ plugins:
       bisect: bright_white italic
 
   mc-hotlist:
-    enable: true
+    enabled: true
     order: 1
     hotkey: CTRL-H
 
   recent:
-    enable: true
+    enabled: true
     order: 2
     hotkey: CTRL-T

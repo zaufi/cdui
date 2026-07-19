@@ -7,7 +7,7 @@ color:
 
 plugins:
   env:
-    enable: true
+    enabled: true
     order: 4
   git-worktrees:
-    enable: false
+    enabled: false
