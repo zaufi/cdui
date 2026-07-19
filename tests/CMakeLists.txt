@@ -21,3 +21,8 @@ add_test(
     COMMAND "${BATS_EXECUTABLE}" "${PROJECT_SOURCE_DIR}/tests/cdui_feed_mc_hotlist_tests.bats"
     WORKING_DIRECTORY "${PROJECT_BINARY_DIR}"
   )
+add_test(
+    NAME "recent feed test"
+    COMMAND "${BATS_EXECUTABLE}" "${PROJECT_SOURCE_DIR}/tests/cdui_feed_recent_tests.bats"
+    WORKING_DIRECTORY "${PROJECT_BINARY_DIR}"
+  )

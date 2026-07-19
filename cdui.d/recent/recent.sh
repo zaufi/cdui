@@ -16,11 +16,11 @@ function _cdui.recent.dirs_count()
         return 0
     fi
 
-    echo 10
+    echo 25
 }
 
 #
-# Return the JSON cache file path with top recent directories.
+# Return the JSON cache file path with recent directories.
 #
 function _cdui.recent.cache_file()
 {
@@ -73,7 +73,7 @@ function _cdui.save_recent_dirs_stats()
 }
 
 #
-# Rebuild the JSON cache with the configured number of most used recent directories.
+# Rebuild the JSON cache with the configured number of most recent directories.
 #
 function _cdui.recent.refresh_dirs_cache()
 {
@@ -90,7 +90,7 @@ function _cdui.recent.refresh_dirs_cache()
             read -r _count _timestamp <<< "${_CDUI_RECENT_DIRS_STATS["${_dir}"]}"
             printf '%s\t%s\t%s\n' "${_count:-0}" "${_timestamp:-0}" "${_dir}"
         done
-    } | sort -t $'\t' -k1,1nr -k2,2nr \
+    } | sort -t $'\t' -k2,2nr -k1,1nr \
       | head -n "${recent_dirs_count}" \
       | jq -R -s '
             split("\n")
