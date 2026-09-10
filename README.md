@@ -121,7 +121,7 @@ directory to its selection count and last-use timestamp, in:
 ${XDG_CACHE_HOME:-$HOME/.cache}/cdui/recent-dirs.bash
 ```
 
-Set `SP_CDUI_RECENT_DIRS_COUNT` to control how many recent directories are
+Set `CDUI_RECENT_DIRS_COUNT` to control how many recent directories are
 shown. The default is `25`. The list is built from the statistics on every
 run, so a change takes effect immediately.
 

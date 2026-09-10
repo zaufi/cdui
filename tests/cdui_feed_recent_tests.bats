@@ -76,7 +76,7 @@ seed_recent_stats() {
     assert_output '/tmp/third'
 }
 
-@test 'recent feed honors SP_CDUI_RECENT_DIRS_COUNT' {
+@test 'recent feed honors CDUI_RECENT_DIRS_COUNT' {
     local -a entries=()
     local -i index
     for ((index = 1; index <= 10; ++index)); do
@@ -84,7 +84,7 @@ seed_recent_stats() {
     done
     seed_recent_stats "${entries[@]}"
 
-    SP_CDUI_RECENT_DIRS_COUNT=3 run bats_pipe bash cdui-feed.sh --recent \| jq length
+    CDUI_RECENT_DIRS_COUNT=3 run bats_pipe bash cdui-feed.sh --recent \| jq length
     assert_success
     assert_output 3
 }

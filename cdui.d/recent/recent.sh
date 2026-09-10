@@ -11,8 +11,8 @@ declare -Ag _CDUI_RECENT_DIRS_STATS=()
 #
 function _cdui.recent.dirs_count()
 {
-    if [[ ${SP_CDUI_RECENT_DIRS_COUNT:-} =~ ^[0-9]+$ ]]; then
-        echo "${SP_CDUI_RECENT_DIRS_COUNT}"
+    if [[ ${CDUI_RECENT_DIRS_COUNT:-} =~ ^[0-9]+$ ]]; then
+        echo "${CDUI_RECENT_DIRS_COUNT}"
         return 0
     fi
 
