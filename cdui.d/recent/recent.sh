@@ -20,14 +20,6 @@ function _cdui.recent.dirs_count()
 }
 
 #
-# Return the JSON cache file path with recent directories.
-#
-function _cdui.recent.cache_file()
-{
-    echo "$(cdui.cache.dir)"/recent-dirs.json
-}
-
-#
 # Return the bash cache file path with recent-directory usage statistics.
 #
 function _cdui.recent.stats_file()
@@ -73,17 +65,12 @@ function _cdui.save_recent_dirs_stats()
 }
 
 #
-# Rebuild the JSON cache with the configured number of most recent directories.
+# Print a JSON array with the configured number of most recent directories.
 #
-function _cdui.recent.refresh_dirs_cache()
+function _cdui.recent.build_dirs_json()
 {
-
-    mkdir -p -- "$(cdui.cache.dir)"
-
-    local -r cache_file=$(_cdui.recent.cache_file)
     local -r recent_dirs_count=$(_cdui.recent.dirs_count)
-    local tmp_file
-    tmp_file=$(mktemp "${cache_file}.XXXXXX") || return 1
+    local _dir _count _timestamp
 
     {
         for _dir in "${!_CDUI_RECENT_DIRS_STATS[@]}"; do
@@ -97,12 +84,7 @@ function _cdui.recent.refresh_dirs_cache()
           | map(select(length > 0))
           | map(split("\t"))
           | map({entry: .[1], url: .[2]})
-        ' > "${tmp_file}" || {
-            rm -f -- "${tmp_file}"
-            return 1
-        }
-
-    mv -f -- "${tmp_file}" "${cache_file}"
+        '
 }
 
 #
@@ -110,17 +92,8 @@ function _cdui.recent.refresh_dirs_cache()
 #
 function cdui.recent.get_dirs()
 {
-    local -r cache_file=$(_cdui.recent.cache_file)
-
-    if [[ ! -r ${cache_file} ]]; then
-        _cdui.recent.load_dirs_stats
-        _cdui.recent.refresh_dirs_cache || {
-            printf '[]\n'
-            return 0
-        }
-    fi
-
-    jq '. | map(. + {origin: "🔁"})' "${cache_file}"
+    _cdui.recent.load_dirs_stats
+    _cdui.recent.build_dirs_json | jq '. | map(. + {origin: "🔁"})'
 }
 
 #
@@ -145,6 +118,5 @@ function cdui.recent.post_select_dir()
     fi
 
     _CDUI_RECENT_DIRS_STATS["${dir_name}"]="$((count + 1)) $(date +%s)"
-    _cdui.save_recent_dirs_stats || return 1
-    _cdui.recent.refresh_dirs_cache
+    _cdui.save_recent_dirs_stats
 }

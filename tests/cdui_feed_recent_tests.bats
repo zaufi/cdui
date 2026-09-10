@@ -57,4 +57,42 @@ seed_recent_stats() {
     assert_output $'/tmp/newer-light\n/tmp/same-time-high\n/tmp/same-time-low\n/tmp/older-heavy'
 }
 
+@test 'recent feed reflects stats changes between runs' {
+    seed_recent_stats \
+        '/tmp/first|1|1700000000' \
+        '/tmp/second|1|1700000100'
+
+    run bats_pipe bash cdui-feed.sh --recent \| jq -r '.[0].url'
+    assert_success
+    assert_output '/tmp/second'
+
+    seed_recent_stats \
+        '/tmp/first|1|1700000000' \
+        '/tmp/second|1|1700000100' \
+        '/tmp/third|1|1700000200'
+
+    run bats_pipe bash cdui-feed.sh --recent \| jq -r '.[0].url'
+    assert_success
+    assert_output '/tmp/third'
+}
+
+@test 'recent feed honors SP_CDUI_RECENT_DIRS_COUNT' {
+    local -a entries=()
+    local -i index
+    for ((index = 1; index <= 10; ++index)); do
+        entries+=("/tmp/cdui-recent-${index}|1|$((1700000000 + index))")
+    done
+    seed_recent_stats "${entries[@]}"
+
+    SP_CDUI_RECENT_DIRS_COUNT=3 run bats_pipe bash cdui-feed.sh --recent \| jq length
+    assert_success
+    assert_output 3
+}
+
+@test 'recent feed is empty when no statistics exist' {
+    run bats_pipe bash cdui-feed.sh --recent \| jq length
+    assert_success
+    assert_output 0
+}
+
 # kate: hl bash;
