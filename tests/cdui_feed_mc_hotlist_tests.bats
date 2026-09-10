@@ -41,32 +41,87 @@ setup() {
 }
 
 @test 'mc-hotlist keeps valid cache on repeated reads' {
-    CDUI_MC_HOTLIST="${BATS_TEST_DIRNAME}"/test-hotlist \
+    local -r hotlist="${BATS_TEST_DIRNAME}"/test-hotlist
+    local -r cache_file="${XDG_CACHE_HOME}"/cdui/"${hotlist//[^[:alnum:]_-]/_}".json
+
+    CDUI_MC_HOTLIST="${hotlist}" \
     run bats_pipe bash cdui-feed.sh -m \| jq -r '.[0].entry + ": " + .[0].url'
     assert_success
     assert_output 'Unit Test: /unit-test'
 
-    CDUI_MC_HOTLIST="${BATS_TEST_DIRNAME}"/test-hotlist \
+    assert_file_exists "${cache_file}"
+    assert_file_exists "${cache_file}".stamp
+    local -r before=$(stat -c '%y' "${cache_file}")
+
+    CDUI_MC_HOTLIST="${hotlist}" \
     run bats_pipe bash cdui-feed.sh -m \| jq -r '.[0].entry + ": " + .[0].url'
     assert_success
     assert_output 'Unit Test: /unit-test'
+
+    # The cache is still valid, so it must not be rebuilt
+    assert_equal "$(stat -c '%y' "${cache_file}")" "${before}"
 }
 
 @test 'mc-hotlist updates cache on repeated reads' {
-    local -rx CDUI_MC_HOTLIST="${XDG_CONFIG_HOME}"/test-hotlist
-    cp --reflink=auto -vf "${BATS_TEST_DIRNAME}"/test-hotlist "${XDG_CONFIG_HOME}"
+    local -r hotlist="${XDG_CONFIG_HOME}"/test-hotlist
+    cp --reflink=auto -vf "${BATS_TEST_DIRNAME}"/test-hotlist "${hotlist}"
 
+    CDUI_MC_HOTLIST="${hotlist}" \
     run bats_pipe bash cdui-feed.sh -m \| jq -r '.[] | .entry + ": " + .url'
     assert_success
     assert_output 'Unit Test: /unit-test'
 
     # Override the hotlist file with another one containing more entries.
-    cp --reflink=auto -vf "${BATS_TEST_DIRNAME}"/test-dua-hotlist "${XDG_CONFIG_HOME}"/test-hotlist
-    touch -m -d '+1 minute' "${CDUI_MC_HOTLIST}"
+    cp --reflink=auto -vf "${BATS_TEST_DIRNAME}"/test-dua-hotlist "${hotlist}"
 
+    CDUI_MC_HOTLIST="${hotlist}" \
     run bats_pipe bash cdui-feed.sh -m \| jq -r '.[] | .entry + ": " + .url'
     assert_success
     assert_output $'Unit Test: /unit-test\nAdded entry: /unit-test-added'
+}
+
+@test 'mc-hotlist updates cache when the hotlist mtime goes backwards' {
+    local -r hotlist="${XDG_CONFIG_HOME}"/test-hotlist
+    cp --reflink=auto -vf "${BATS_TEST_DIRNAME}"/test-hotlist "${hotlist}"
+
+    CDUI_MC_HOTLIST="${hotlist}" \
+    run bats_pipe bash cdui-feed.sh -m \| jq -r '.[] | .entry + ": " + .url'
+    assert_success
+    assert_output 'Unit Test: /unit-test'
+
+    # Modify the hotlist the way its modification time doesn't move forward,
+    # like restoring a backup or copying a file with timestamps preserved do.
+    cp --reflink=auto -vf "${BATS_TEST_DIRNAME}"/test-dua-hotlist "${hotlist}"
+    touch -m -d '-1 hour' "${hotlist}"
+
+    CDUI_MC_HOTLIST="${hotlist}" \
+    run bats_pipe bash cdui-feed.sh -m \| jq -r '.[] | .entry + ": " + .url'
+    assert_success
+    assert_output $'Unit Test: /unit-test\nAdded entry: /unit-test-added'
+}
+
+@test 'mc-hotlist updates cache when the converter has changed' {
+    local -r plugin_dir="${BATS_TEST_TMPDIR}"/cdui.d
+    cp -RL --reflink=auto -f ./cdui.d "${plugin_dir}"
+
+    local -r hotlist="${BATS_TEST_DIRNAME}"/test-hotlist
+    local -r cache_file="${XDG_CACHE_HOME}"/cdui/"${hotlist//[^[:alnum:]_-]/_}".json
+
+    CDUI_PLUGIN_DIR="${plugin_dir}" CDUI_MC_HOTLIST="${hotlist}" \
+    run bats_pipe bash cdui-feed.sh -m \| jq -r '.[0].entry + ": " + .[0].url'
+    assert_success
+    assert_output 'Unit Test: /unit-test'
+
+    local -r before=$(cat "${cache_file}".stamp)
+
+    touch -m "${plugin_dir}"/mc-hotlist/hotlist2json.awk
+
+    CDUI_PLUGIN_DIR="${plugin_dir}" CDUI_MC_HOTLIST="${hotlist}" \
+    run bats_pipe bash cdui-feed.sh -m \| jq -r '.[0].entry + ": " + .[0].url'
+    assert_success
+    assert_output 'Unit Test: /unit-test'
+
+    assert_not_equal "$(cat "${cache_file}".stamp)" "${before}"
 }
 
 @test 'mc-hotlist can have groups' {

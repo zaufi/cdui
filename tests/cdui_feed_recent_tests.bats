@@ -17,6 +17,9 @@ setup() {
 
     export TERM=dumb
     export NO_COLOR=1
+
+    # NOTE Do not let the user's environment affect the expected defaults
+    unset CDUI_RECENT_DIRS_COUNT
 }
 
 seed_recent_stats() {

@@ -154,6 +154,94 @@ function cdui.cache.config_file()
 }
 # END Config location helpers
 
+# BEGIN Cache freshness helpers
+#
+# Print a change signature for the given source files.
+#
+# NOTE Unlike `-nt` comparison, the signature detects any change of a source
+# file, including the ones which do not move the modification time forward
+# (restored backups, `cp -p`, `rsync -a`, `touch -r`, ...).
+#
+# @param $@ -- source file paths
+#
+function cdui.cache.signature()
+{
+    local _file
+    for _file in "$@"; do
+        if [[ -e ${_file} ]]; then
+            stat -c '%n|%i|%s|%y' -- "${_file}"
+        else
+            printf '%s|missing\n' "${_file}"
+        fi
+    done
+}
+
+#
+# Return the stamp file path holding the signature of a cache file.
+#
+# @param $1 -- cache file path
+#
+function cdui.cache.stamp_file()
+{
+    printf '%s.stamp\n' "$1"
+}
+
+#
+# Check whether a cache file is still valid for the given signature.
+#
+# @param $1 -- cache file path
+# @param $2 -- signature as returned by `cdui.cache.signature`
+#
+function cdui.cache.is_fresh()
+{
+    local -r _cache_file="$1"
+    local -r _signature="$2"
+    local -r _stamp_file="$(cdui.cache.stamp_file "${_cache_file}")"
+
+    [[ -s ${_cache_file} && -r ${_stamp_file} ]] || return 1
+    [[ "$(< "${_stamp_file}")" == "${_signature}" ]]
+}
+
+#
+# Atomically publish a freshly built cache file and stamp it.
+#
+# NOTE The signature must be captured _before_ the content has been built,
+# so that a source modified meanwhile gets detected on the next run.
+#
+# @param $1 -- cache file path
+# @param $2 -- temporary file with the new content
+# @param $3 -- signature captured before the content was built
+#
+function cdui.cache.commit()
+{
+    local -r _cache_file="$1"
+    local -r _tmp_file="$2"
+    local -r _signature="$3"
+
+    local -r _stamp_file="$(cdui.cache.stamp_file "${_cache_file}")"
+
+    mv -f -- "${_tmp_file}" "${_cache_file}" || {
+        rm -f -- "${_tmp_file}"
+        return 1
+    }
+
+    # NOTE The stamp gets published the same (atomic) way, so an interrupted
+    # update can't leave a partially written signature behind.
+    local _tmp_stamp_file
+    _tmp_stamp_file=$(mktemp "${_stamp_file}.XXXXXX") || return 1
+
+    if ! printf '%s\n' "${_signature}" > "${_tmp_stamp_file}"; then
+        rm -f -- "${_tmp_stamp_file}"
+        return 1
+    fi
+
+    mv -f -- "${_tmp_stamp_file}" "${_stamp_file}" || {
+        rm -f -- "${_tmp_stamp_file}"
+        return 1
+    }
+}
+# END Cache freshness helpers
+
 function cdui.config.load()
 {
     local -r config_file="$(cdui.config.file)"
@@ -163,8 +251,16 @@ function cdui.config.load()
     fi
 
     local -r config_cache_file=$(cdui.cache.config_file)
-    if [[ ! -f ${config_cache_file} || ${config_file} -nt ${config_cache_file} ]]; then
+    # NOTE This very file contains the generator of the cached functions,
+    # so it's a source of the cache as well.
+    local -r signature=$(cdui.cache.signature "${config_file}" "${BASH_SOURCE[0]}")
+
+    if ! cdui.cache.is_fresh "${config_cache_file}" "${signature}"; then
         mkdir -p -- "$(cdui.cache.dir)"
+
+        local tmp_file
+        tmp_file=$(mktemp "${config_cache_file}.XXXXXX") || return 1
+
         yq eval -o=json '.' "${config_file}" \
           | jq -r '
                 paths(type != "object" and type != "array") as $path
@@ -177,7 +273,12 @@ function cdui.config.load()
                       "printf '\''%s'\'' \($value | @sh)"
                     end
                   + "\n}\n"
-            ' > "${config_cache_file}"
+            ' > "${tmp_file}" || {
+                rm -f -- "${tmp_file}"
+                return 1
+            }
+
+        cdui.cache.commit "${config_cache_file}" "${tmp_file}" "${signature}" || return 1
     fi
 
     # shellcheck source=/dev/null

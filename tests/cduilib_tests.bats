@@ -221,4 +221,74 @@ setup() {
     assert_not_equal "${before}" "${after}"
 }
 
+@test 'cdui.config.load regenerates cache when config mtime goes backwards' {
+    cp -f --reflink=auto "${BATS_TEST_DIRNAME}"/sample-config.yaml "$(cdui.config.file)"
+
+    cdui.config.load
+    cache_file="$(cdui.cache.config_file)"
+
+    # Modify the config the way its modification time doesn't move forward,
+    # like restoring a backup or copying a file with timestamps preserved do.
+    echo 'foo: bar' >>"$(cdui.config.file)"
+    touch -m -d '-1 hour' "$(cdui.config.file)"
+
+    cdui.config.load
+
+    assert_file_exists "${cache_file}"
+    assert_equal "$(cdui.config.color.url)" $'\033[36;3m'
+    assert_equal "$(cdui.config.foo)" bar
+}
+
+@test 'cdui.cache.signature reflects any change of the sources' {
+    source_file="${BATS_TEST_TMPDIR}"/source.txt
+    echo 'data' >"${source_file}"
+
+    signature="$(cdui.cache.signature "${source_file}")"
+    assert_equal "$(cdui.cache.signature "${source_file}")" "${signature}"
+
+    # Content change w/ the modification time moved backwards
+    echo 'more data' >>"${source_file}"
+    touch -m -d '-1 hour' "${source_file}"
+    assert_not_equal "$(cdui.cache.signature "${source_file}")" "${signature}"
+
+    # Missing files have a signature too
+    rm -f -- "${source_file}"
+    assert_equal "$(cdui.cache.signature "${source_file}")" "${source_file}|missing"
+}
+
+@test 'cdui.cache.is_fresh validates the cache against the stamp' {
+    source_file="${BATS_TEST_TMPDIR}"/source.txt
+    echo 'data' >"${source_file}"
+
+    cache_file="$(cdui.cache.dir)"/test-cache.txt
+    signature="$(cdui.cache.signature "${source_file}")"
+
+    # No cache file yet
+    run cdui.cache.is_fresh "${cache_file}" "${signature}"
+    assert_failure
+
+    tmp_file="$(mktemp "${cache_file}".XXXXXX)"
+    echo 'cached data' >"${tmp_file}"
+    cdui.cache.commit "${cache_file}" "${tmp_file}" "${signature}"
+
+    assert_file_exists "${cache_file}"
+    assert_file_not_exists "${tmp_file}"
+    assert_equal "$(cdui.cache.stamp_file "${cache_file}")" "${cache_file}.stamp"
+    assert_file_contains "${cache_file}".stamp "${source_file}"
+
+    run cdui.cache.is_fresh "${cache_file}" "${signature}"
+    assert_success
+
+    # Any source change invalidates the cache
+    echo 'more data' >>"${source_file}"
+    touch -m -d '-1 hour' "${source_file}"
+    run cdui.cache.is_fresh "${cache_file}" "$(cdui.cache.signature "${source_file}")"
+    assert_failure
+
+    # An empty cache file is never fresh
+    : >"${cache_file}"
+    run cdui.cache.is_fresh "${cache_file}" "${signature}"
+    assert_failure
+}
+
 # kate: hl bash;

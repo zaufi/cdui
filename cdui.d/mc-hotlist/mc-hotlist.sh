@@ -47,12 +47,13 @@ function _cdui.mc_hotlist_ensure_fresh_cache()
 
     local -r cache_file=$(_cdui.mc_hotlist_cache_file)
     local -r hotlist=$(_cdui.mc_hotlist_file)
-    if [[
-        -r ${hotlist}
-     && -s ${cache_file}
-     && ! ${hotlist} -nt ${cache_file}
-     && ! ${converter} -nt ${cache_file}
-     ]]; then
+
+    # NOTE The signature must be taken _before_ reading the sources: if the
+    # hotlist gets modified while the cache is being built, the stored (older)
+    # signature won't match on the next run and the cache gonna be rebuilt.
+    local -r signature=$(cdui.cache.signature "${hotlist}" "${converter}")
+
+    if cdui.cache.is_fresh "${cache_file}" "${signature}"; then
         return
     fi
 
@@ -70,7 +71,7 @@ function _cdui.mc_hotlist_ensure_fresh_cache()
             cdui.mkentry error "error on converting: ${hotlist}" >"${tmp_file}"
         fi
     fi
-    mv -f -- "${tmp_file}" "${cache_file}"
+    cdui.cache.commit "${cache_file}" "${tmp_file}" "${signature}"
 }
 
 #
