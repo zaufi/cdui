@@ -9,8 +9,14 @@ if [[ $- == *x* ]]; then
     _cdui_on_trace='-x'
 fi
 
-# shellcheck disable=SC2155
-declare -r _CDUI_SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+# NOTE This file can be sourced more than once in the same shell: a login shell
+# may evaluate `/etc/profile` (and hence the installed `/etc/profile.d/cdui.sh`)
+# twice -- e.g. when a user's `~/.bashrc` sources it again. A second `declare`
+# of a readonly variable is an error, so assign it only once.
+if [[ ! -v _CDUI_SCRIPT_DIR ]]; then
+    # shellcheck disable=SC2155
+    declare -r _CDUI_SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+fi
 
 if [[ -f ${_CDUI_SCRIPT_DIR}/cduilib.sh ]]; then
     # shellcheck source=./cduilib.sh

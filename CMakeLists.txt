@@ -187,9 +187,26 @@ install(
     DESTINATION "${CMAKE_INSTALL_FULL_SYSCONFDIR}"
   )
 
+# The shell snippet to install sets up an interactive-only thing: a shell
+# function and its key bindings. Gentoo/Exherbo-like systems source
+# `/etc/bash/bashrc.d/*` from the system-wide `bashrc`, for every interactive
+# shell and exactly once -- that's where such a snippet belongs. Elsewhere, fall
+# back to `profile.d`: read by login shells (and, on Fedora-like systems, by
+# `/etc/bashrc` for interactive ones). Packagers, feel free to override.
+if(IS_DIRECTORY ${CMAKE_INSTALL_FULL_SYSCONFDIR}/bash/bashrc.d)
+    set(_cdui_shell_init_dir ${CMAKE_INSTALL_FULL_SYSCONFDIR}/bash/bashrc.d)
+else()
+    set(_cdui_shell_init_dir ${CMAKE_INSTALL_FULL_SYSCONFDIR}/profile.d)
+endif()
+set(
+    CDUI_SHELL_INIT_DIR "${_cdui_shell_init_dir}"
+    CACHE PATH "Directory for the Bash startup snippet that sources `cdui.sh`"
+  )
+message(STATUS "Bash startup snippet goes to: ${CDUI_SHELL_INIT_DIR}")
+
 install(
     FILES ${CMAKE_BINARY_DIR}/cdui-profile.sh
-    DESTINATION ${CMAKE_INSTALL_FULL_SYSCONFDIR}/profile.d
+    DESTINATION ${CDUI_SHELL_INIT_DIR}
     RENAME cdui.sh
   )
 

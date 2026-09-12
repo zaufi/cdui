@@ -1,7 +1,12 @@
 # SPDX-FileCopyrightText: 2009-2026 Alex Turbov <i.zaufi@gmail.com>
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-# shellcheck source=cdui.sh
-. "@CMAKE_INSTALL_FULL_LIBEXECDIR@/@PROJECT_NAME@/@PROJECT_NAME@.sh"
+# NOTE `cdui` is an interactive thing only. Depending on the install layout this
+# snippet may be read by a non-interactive shell (`profile.d` and a login shell
+# like `bash -lc ...`) -- nothing to set up for it.
+if [[ $- == *i* ]]; then
+    # shellcheck source=cdui.sh
+    . "@CMAKE_INSTALL_FULL_LIBEXECDIR@/@PROJECT_NAME@/@PROJECT_NAME@.sh"
+fi
 
 # kate: hl bash;
